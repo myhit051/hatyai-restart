@@ -8,8 +8,6 @@ import BottomNav from "@/components/BottomNav";
 const IndexPage = () => {
     return (
         <div className="min-h-screen bg-background pb-28">
-            <Header />
-
             <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
                 {/* Hero Status Section */}
                 <StatusCard userName="สมชาย" />
@@ -25,8 +23,6 @@ const IndexPage = () => {
                 {/* Recent Activity */}
                 <RecentActivity />
             </main>
-
-            <BottomNav />
         </div>
     );
 };
