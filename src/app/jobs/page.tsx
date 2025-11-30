@@ -253,7 +253,15 @@ function RepairJobCard({ job, onAssign }: RepairJobCardProps) {
   );
 }
 
-export default function JobsPage() {
+import { Suspense } from "react";
+
+// ... (imports)
+
+// ... (constants)
+
+// ... (interfaces and helper components)
+
+function JobsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [generalJobs, setGeneralJobs] = useState<GeneralJob[]>([]);
@@ -525,5 +533,13 @@ export default function JobsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <JobsContent />
+    </Suspense>
   );
 }
