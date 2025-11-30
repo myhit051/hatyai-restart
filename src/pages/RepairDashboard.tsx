@@ -19,6 +19,8 @@ import {
   ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 
+import LocationPicker from "@/components/LocationPicker";
+
 const RepairDashboard = () => {
   const { user } = useAuthStore();
   const { jobs, createJob, assignJob, updateJobStatus, loadJobs, myJobs, availableJobs } = useJobStore();
@@ -29,7 +31,8 @@ const RepairDashboard = () => {
     location: "",
     repairType: "other" as RepairType,
     urgency: "medium" as UrgencyLevel,
-    estimatedDuration: ""
+    estimatedDuration: "",
+    coordinates: null as { lat: number; lng: number } | null,
   });
 
   useEffect(() => {
@@ -46,25 +49,36 @@ const RepairDashboard = () => {
       return;
     }
 
-    await createJob({
-      title: newJob.title,
-      description: newJob.description,
-      job_type: newJob.repairType as any,
-      location: newJob.location,
-      urgency: newJob.urgency,
-      requester_id: user.id,
-      requester_name: user.name,
-    });
+    try {
+      const result = await createJob({
+        title: newJob.title,
+        description: newJob.description,
+        job_type: newJob.repairType as any,
+        location: newJob.location,
+        urgency: newJob.urgency,
+        requester_id: user.id,
+        requester_name: user.name,
+        coordinates: newJob.coordinates || undefined,
+      });
 
-    setNewJob({
-      title: "",
-      description: "",
-      location: "",
-      repairType: "other",
-      urgency: "medium",
-      estimatedDuration: ""
-    });
-    setIsCreateDialogOpen(false);
+      if (result && result.success) {
+        setNewJob({
+          title: "",
+          description: "",
+          location: "",
+          repairType: "other",
+          urgency: "medium",
+          estimatedDuration: "",
+          coordinates: null,
+        });
+        setIsCreateDialogOpen(false);
+      } else {
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + (result?.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error creating job:", error);
+      alert("เกิดข้อผิดพลาดที่ไม่คาดคิด");
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -172,11 +186,11 @@ const RepairDashboard = () => {
 
                 <div>
                   <Label htmlFor="location">สถานที่</Label>
-                  <Input
-                    id="location"
-                    value={newJob.location}
-                    onChange={(e) => setNewJob(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="ที่อยู่ หรือจุดสังเกต"
+                  <LocationPicker
+                    value={newJob.coordinates}
+                    onChange={(coords) => setNewJob(prev => ({ ...prev, coordinates: coords }))}
+                    addressValue={newJob.location}
+                    onAddressChange={(val) => setNewJob(prev => ({ ...prev, location: val }))}
                   />
                 </div>
 
@@ -284,7 +298,7 @@ const RepairDashboard = () => {
                         </div>
                       </div>
 
-                      {user && user.id !== job.requesterId && (
+                      {user && user.role === 'technician' && user.id !== job.requesterId && (
                         <Button size="sm" onClick={() => assignJob(job.id, user.id)}>
                           รับงาน
                         </Button>

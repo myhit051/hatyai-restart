@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getResources, getNeeds, createResource, createNeed, ResourceData, NeedData } from '@/app/actions/resources';
+import { getResources, getNeeds, createResource, createNeed, updateResourceStatus, updateNeedStatus, ResourceData, NeedData } from '@/app/actions/resources';
 
 export type ResourceType = 'food' | 'water' | 'medicine' | 'shelter' | 'clothing' | 'tools' | 'construction' | 'other';
 export type ResourceStatus = 'available' | 'assigned' | 'distributed' | 'expired';
@@ -60,8 +60,8 @@ interface ResourceState {
   isLoading: boolean;
 
   // Actions
-  donateResource: (resourceData: Partial<Resource>) => Promise<boolean>;
-  requestNeed: (needData: Partial<ResourceNeed>) => Promise<boolean>;
+  donateResource: (resourceData: Partial<Resource>) => Promise<{ success: boolean; error?: any }>;
+  requestNeed: (needData: Partial<ResourceNeed>) => Promise<{ success: boolean; error?: any }>;
   matchResource: (resourceId: string, needId: string) => Promise<void>;
   updateResourceStatus: (resourceId: string, status: ResourceStatus) => Promise<void>;
   updateNeedStatus: (needId: string, status: ResourceNeed['status']) => Promise<void>;
@@ -82,21 +82,15 @@ export const useResourceStore = create<ResourceState>((set, get) => ({
 
   donateResource: async (resourceData: Partial<Resource>) => {
     try {
-      // In a real app, we should get the user ID from the auth session, 
-      // but here we might rely on the component passing it or the store state if we linked them.
-      // For now, let's assume the component passes the necessary IDs or we get them from localStorage as fallback (not ideal for security but for MVP transition)
-      // Better: The component calling this should ensure the user is logged in and pass the ID, or we use the authStore.
-
-      // We'll assume resourceData contains the necessary fields.
-
       const data: ResourceData = {
         type: resourceData.type || 'other',
         name: resourceData.name || '',
         description: resourceData.description || '',
         quantity: resourceData.quantity || 0,
         unit: resourceData.unit || 'items',
-        donorId: resourceData.donorId || '', // Component must provide this
+        donorId: resourceData.donorId || '',
         location: resourceData.location || '',
+        coordinates: resourceData.coordinates,
         priority: resourceData.priority || 'medium',
         qualityCondition: resourceData.qualityCondition || 'good',
         expirationDate: resourceData.expirationDate,
@@ -105,26 +99,26 @@ export const useResourceStore = create<ResourceState>((set, get) => ({
 
       const result = await createResource(data);
       if (result.success) {
-        await get().loadData(); // Reload data to update UI
-        return true;
+        await get().loadData();
       }
-      return false;
+      return result;
     } catch (error) {
       console.error("Donate resource failed:", error);
-      return false;
+      return { success: false, error };
     }
   },
 
   requestNeed: async (needData: Partial<ResourceNeed>) => {
     try {
       const data: NeedData = {
-        requesterId: needData.requesterId || '', // Component must provide this
+        requesterId: needData.requesterId || '',
         resourceType: needData.resourceType || 'other',
         requiredQuantity: needData.requiredQuantity || 1,
         unit: needData.unit || 'items',
         urgency: needData.urgency || 'medium',
         description: needData.description || '',
         location: needData.location || '',
+        coordinates: needData.coordinates,
         specialRequirements: needData.specialRequirements,
         beneficiaryCount: needData.beneficiaryCount,
         vulnerabilityLevel: needData.vulnerabilityLevel
@@ -133,12 +127,11 @@ export const useResourceStore = create<ResourceState>((set, get) => ({
       const result = await createNeed(data);
       if (result.success) {
         await get().loadData();
-        return true;
       }
-      return false;
+      return result;
     } catch (error) {
       console.error("Request need failed:", error);
-      return false;
+      return { success: false, error };
     }
   },
 
@@ -148,13 +141,17 @@ export const useResourceStore = create<ResourceState>((set, get) => ({
   },
 
   updateResourceStatus: async (resourceId: string, status: ResourceStatus) => {
-    // TODO: Implement server action
-    console.log("Update status not implemented yet on server");
+    const result = await updateResourceStatus(resourceId, status);
+    if (result.success) {
+      await get().loadData();
+    }
   },
 
   updateNeedStatus: async (needId: string, status: ResourceNeed['status']) => {
-    // TODO: Implement server action
-    console.log("Update need status not implemented yet on server");
+    const result = await updateNeedStatus(needId, status);
+    if (result.success) {
+      await get().loadData();
+    }
   },
 
   getResourcesByType: (type: ResourceType) => {

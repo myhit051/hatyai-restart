@@ -10,6 +10,7 @@ export interface RepairJob {
   title: string;
   description: string | null;
   location: string | null;
+  coordinates: { lat: number; lng: number } | null;
   job_type: RepairType;
   urgency: UrgencyLevel;
   status: JobStatus;
@@ -27,7 +28,7 @@ interface JobState {
   myJobs: RepairJob[];
   availableJobs: RepairJob[];
   isLoading: boolean;
-  createJob: (jobData: JobData) => Promise<void>;
+  createJob: (jobData: JobData) => Promise<{ success: boolean; error?: string }>;
   assignJob: (jobId: string, technicianId: string) => Promise<void>;
   updateJobStatus: (jobId: string, status: JobStatus) => Promise<void>;
   getJobsByLocation: (location: string) => RepairJob[];
@@ -45,11 +46,21 @@ const mapJobToRepairJob = (job: Job): RepairJob => {
     }
   }
 
+  let coordinates: { lat: number; lng: number } | null = null;
+  if (job.coordinates) {
+    try {
+      coordinates = JSON.parse(job.coordinates);
+    } catch (e) {
+      coordinates = null;
+    }
+  }
+
   return {
     id: job.id,
     title: job.title,
     description: job.description,
     location: job.location,
+    coordinates,
     job_type: job.job_type as RepairType,
     urgency: job.urgency,
     status: job.status,
@@ -100,6 +111,7 @@ export const useJobStore = create<JobState>((set, get) => ({
     if (result.success) {
       await get().loadJobs(jobData.requester_id);
     }
+    return result;
   },
 
   assignJob: async (jobId: string, technicianId: string) => {

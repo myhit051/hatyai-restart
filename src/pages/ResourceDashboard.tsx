@@ -13,11 +13,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ResourceType, ResourceStatus, ResourceNeed } from "@/store/resourceStore";
 import { HeartIcon, PlusIcon, CubeIcon, UsersIcon, CheckCircleIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import ImageUpload from "@/components/ui/image-upload";
+import LocationPicker from "@/components/LocationPicker";
 import ClientOnly from "@/components/ClientOnly";
 
 const ResourceDashboard = () => {
   const { user } = useAuthStore();
-  const { resources, needs, donateResource, requestNeed, matchResource, findMatches, loadData, myDonations, myNeeds, availableResources, pendingNeeds } = useResourceStore();
+  const { resources, needs, donateResource, requestNeed, matchResource, findMatches, loadData, myDonations, myNeeds, availableResources, pendingNeeds, updateResourceStatus, updateNeedStatus } = useResourceStore();
   const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [newDonation, setNewDonation] = useState({
@@ -29,7 +30,8 @@ const ResourceDashboard = () => {
     location: "",
     priority: "medium" as "low" | "medium" | "high" | "critical",
     qualityCondition: "good" as "excellent" | "good" | "fair" | "poor",
-    images: [] as string[]
+    images: [] as string[],
+    coordinates: null as { lat: number; lng: number } | null,
   });
   const [newNeed, setNewNeed] = useState({
     resourceType: "other" as ResourceType,
@@ -40,7 +42,8 @@ const ResourceDashboard = () => {
     urgency: "medium" as "low" | "medium" | "high" | "critical",
     specialRequirements: "",
     beneficiaryCount: 10,
-    vulnerabilityLevel: "medium" as "low" | "medium" | "high"
+    vulnerabilityLevel: "medium" as "low" | "medium" | "high",
+    coordinates: null as { lat: number; lng: number } | null,
   });
 
   useEffect(() => {
@@ -52,24 +55,36 @@ const ResourceDashboard = () => {
       alert("กรุณาเข้าสู่ระบบก่อนบริจาค");
       return;
     }
-    await donateResource({
-      ...newDonation,
-      quantity: parseInt(newDonation.quantity) || 0,
-      donorId: user.id,
-      donorName: user.name
-    });
-    setNewDonation({
-      type: "other",
-      name: "",
-      description: "",
-      quantity: "",
-      unit: "ชิ้น",
-      location: "",
-      priority: "medium",
-      qualityCondition: "good",
-      images: []
-    });
-    setIsDonateDialogOpen(false);
+    try {
+      const result = await donateResource({
+        ...newDonation,
+        quantity: parseInt(newDonation.quantity) || 0,
+        donorId: user.id,
+        donorName: user.name,
+        coordinates: newDonation.coordinates || undefined,
+      });
+
+      if (result && result.success) {
+        setNewDonation({
+          type: "other",
+          name: "",
+          description: "",
+          quantity: "",
+          unit: "ชิ้น",
+          location: "",
+          priority: "medium",
+          qualityCondition: "good",
+          images: [],
+          coordinates: null,
+        });
+        setIsDonateDialogOpen(false);
+      } else {
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + (result?.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error donating resource:", error);
+      alert("เกิดข้อผิดพลาดที่ไม่คาดคิด");
+    }
   };
 
   const handleRequestNeed = async () => {
@@ -77,24 +92,36 @@ const ResourceDashboard = () => {
       alert("กรุณาเข้าสู่ระบบก่อนขอความช่วยเหลือ");
       return;
     }
-    await requestNeed({
-      ...newNeed,
-      requiredQuantity: parseInt(newNeed.requiredQuantity) || 0,
-      requesterId: user.id,
-      requesterName: user.name
-    });
-    setNewNeed({
-      resourceType: "other",
-      requiredQuantity: "",
-      unit: "ชิ้น",
-      location: "",
-      description: "",
-      urgency: "medium",
-      specialRequirements: "",
-      beneficiaryCount: 10,
-      vulnerabilityLevel: "medium"
-    });
-    setIsRequestDialogOpen(false);
+    try {
+      const result = await requestNeed({
+        ...newNeed,
+        requiredQuantity: parseInt(newNeed.requiredQuantity) || 0,
+        requesterId: user.id,
+        requesterName: user.name,
+        coordinates: newNeed.coordinates || undefined,
+      });
+
+      if (result && result.success) {
+        setNewNeed({
+          resourceType: "other",
+          requiredQuantity: "",
+          unit: "ชิ้น",
+          location: "",
+          description: "",
+          urgency: "medium",
+          specialRequirements: "",
+          beneficiaryCount: 10,
+          vulnerabilityLevel: "medium",
+          coordinates: null,
+        });
+        setIsRequestDialogOpen(false);
+      } else {
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + (result?.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error requesting need:", error);
+      alert("เกิดข้อผิดพลาดที่ไม่คาดคิด");
+    }
   };
 
   const handleMatchResource = async (resourceId: string, needId: string) => {
@@ -209,11 +236,11 @@ const ResourceDashboard = () => {
 
                     <div>
                       <Label htmlFor="needLocation">สถานที่จัดส่ง</Label>
-                      <Input
-                        id="needLocation"
-                        value={newNeed.location}
-                        onChange={(e) => setNewNeed(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="ที่อยู่สำหรับจัดส่ง"
+                      <LocationPicker
+                        value={newNeed.coordinates}
+                        onChange={(coords) => setNewNeed(prev => ({ ...prev, coordinates: coords }))}
+                        addressValue={newNeed.location}
+                        onAddressChange={(val) => setNewNeed(prev => ({ ...prev, location: val }))}
                       />
                     </div>
 
@@ -342,11 +369,11 @@ const ResourceDashboard = () => {
 
                     <div>
                       <Label htmlFor="donationLocation">สถานที่รับบริจาค</Label>
-                      <Input
-                        id="donationLocation"
-                        value={newDonation.location}
-                        onChange={(e) => setNewDonation(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="ที่อยู่สำหรับรับบริจาค"
+                      <LocationPicker
+                        value={newDonation.coordinates}
+                        onChange={(coords) => setNewDonation(prev => ({ ...prev, coordinates: coords }))}
+                        addressValue={newDonation.location}
+                        onAddressChange={(val) => setNewDonation(prev => ({ ...prev, location: val }))}
                       />
                     </div>
 
@@ -489,20 +516,28 @@ const ResourceDashboard = () => {
                             </div>
                           </div>
 
-                          {matchedNeeds.length > 0 && user?.role === 'coordinator' && (
-                            <Select onValueChange={(needId) => handleMatchResource(resource.id, needId)}>
-                              <SelectTrigger className="w-32">
-                                <SelectValue placeholder="จับคู่" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {matchedNeeds.map((need) => (
-                                  <SelectItem key={need.id} value={need.id}>
-                                    {need.requesterName}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
+                          <div className="flex flex-col gap-2">
+                            {matchedNeeds.length > 0 && user?.role === 'coordinator' && (
+                              <Select onValueChange={(needId) => handleMatchResource(resource.id, needId)}>
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="จับคู่" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {matchedNeeds.map((need) => (
+                                    <SelectItem key={need.id} value={need.id}>
+                                      {need.requesterName}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+
+                            {user && user.id !== resource.donorId && resource.status === 'available' && (
+                              <Button size="sm" onClick={() => updateResourceStatus(resource.id, 'assigned')}>
+                                ขอรับบริจาค
+                              </Button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="text-xs text-muted-foreground">
@@ -551,6 +586,12 @@ const ResourceDashboard = () => {
                               {need.urgency === "low" && "ต่ำ"}
                             </Badge>
                           </div>
+
+                          {user && user.id === need.requesterId && need.status === 'pending' && (
+                            <Button size="sm" variant="outline" onClick={() => updateNeedStatus(need.id, 'fulfilled')}>
+                              ได้รับแล้ว
+                            </Button>
+                          )}
                         </div>
 
                         <div className="text-xs text-muted-foreground">

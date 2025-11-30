@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Map, MapPin, Wrench, Trash2, Filter, Package } from "lucide-react";
+import MapWrapper from "@/components/MapWrapper";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,7 @@ const MapPage = () => {
           type: "job",
           location: job.location || "ไม่ระบุตำแหน่ง",
           status: job.status,
+          coordinates: job.coordinates || undefined,
         });
       }
     });
@@ -100,6 +102,7 @@ const MapPage = () => {
           type: "resource",
           location: resource.location,
           status: resource.status,
+          coordinates: resource.coordinates || undefined,
         });
       }
     });
@@ -113,6 +116,7 @@ const MapPage = () => {
           type: "need",
           location: need.location,
           status: need.status,
+          coordinates: need.coordinates || undefined,
         });
       }
     });
@@ -124,38 +128,9 @@ const MapPage = () => {
     <div className="min-h-screen bg-background pb-28">
       <main className="max-w-lg mx-auto">
         {/* Map Placeholder */}
-        <div className="relative h-64 bg-gradient-to-br from-blue-50 to-green-50 overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <Map className="w-16 h-16 text-blue-300 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">แผนที่หาดใหญ่</p>
-              <p className="text-xs text-muted-foreground mt-1">OpenStreetMap จะแสดงที่นี่</p>
-            </div>
-          </div>
-
-          {/* Mock map markers for visual */}
-          {markers.slice(0, 3).map((marker, index) => {
-            const config = typeConfig[marker.type];
-            const Icon = config.icon;
-            const positions = [
-              { top: "25%", left: "33%" },
-              { top: "50%", right: "25%" },
-              { bottom: "25%", left: "50%" },
-            ];
-            return (
-              <div
-                key={marker.id}
-                className={cn(
-                  "absolute w-8 h-8 rounded-full flex items-center justify-center shadow-lg",
-                  config.bgColor,
-                  index === 0 && "animate-pulse"
-                )}
-                style={positions[index]}
-              >
-                <Icon className="w-4 h-4 text-white" />
-              </div>
-            );
-          })}
+        {/* Real Map */}
+        <div className="relative h-[400px] w-full overflow-hidden shadow-md">
+          <MapWrapper items={markers} />
         </div>
 
         {/* Filter Bar */}

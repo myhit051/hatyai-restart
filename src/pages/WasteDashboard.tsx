@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WasteType, WasteStatus } from "@/store/wasteStore";
+import LocationPicker from "@/components/LocationPicker";
 import {
   TrashIcon,
   PlusIcon,
@@ -29,6 +30,7 @@ const WasteDashboard = () => {
     wasteType: "mixed" as WasteType,
     description: "",
     severity: "medium" as "low" | "medium" | "high",
+    coordinates: null as { lat: number; lng: number } | null,
   });
 
   useEffect(() => {
@@ -45,22 +47,33 @@ const WasteDashboard = () => {
       return;
     }
 
-    await createReport({
-      reporter_id: user.id,
-      reporter_name: user.name,
-      waste_type: newReport.wasteType,
-      description: newReport.description,
-      location: newReport.location,
-      severity: newReport.severity,
-    });
+    try {
+      const result = await createReport({
+        reporter_id: user.id,
+        reporter_name: user.name,
+        waste_type: newReport.wasteType,
+        description: newReport.description,
+        location: newReport.location,
+        severity: newReport.severity,
+        coordinates: newReport.coordinates || undefined,
+      });
 
-    setNewReport({
-      location: "",
-      wasteType: "mixed",
-      description: "",
-      severity: "medium",
-    });
-    setIsCreateDialogOpen(false);
+      if (result && result.success) {
+        setNewReport({
+          location: "",
+          wasteType: "mixed",
+          description: "",
+          severity: "medium",
+          coordinates: null,
+        });
+        setIsCreateDialogOpen(false);
+      } else {
+        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + (result?.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error creating report:", error);
+      alert("เกิดข้อผิดพลาดที่ไม่คาดคิด");
+    }
   };
 
   const handleUpdateStatus = async (reportId: string, status: WasteStatus) => {
@@ -129,11 +142,11 @@ const WasteDashboard = () => {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="location">สถานที่</Label>
-                  <Input
-                    id="location"
-                    value={newReport.location}
-                    onChange={(e) => setNewReport(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="ระบุสถานที่พบขยะ"
+                  <LocationPicker
+                    value={newReport.coordinates}
+                    onChange={(coords) => setNewReport(prev => ({ ...prev, coordinates: coords }))}
+                    addressValue={newReport.location}
+                    onAddressChange={(val) => setNewReport(prev => ({ ...prev, location: val }))}
                   />
                 </div>
 

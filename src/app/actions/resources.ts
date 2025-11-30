@@ -16,6 +16,7 @@ export interface ResourceData {
     qualityCondition: string;
     expirationDate?: string;
     images?: string[];
+    coordinates?: { lat: number; lng: number };
 }
 
 export interface NeedData {
@@ -29,6 +30,7 @@ export interface NeedData {
     specialRequirements?: string;
     beneficiaryCount?: number;
     vulnerabilityLevel?: string;
+    coordinates?: { lat: number; lng: number };
 }
 
 export async function getResources() {
@@ -50,6 +52,7 @@ export async function getResources() {
             donorId: row.donor_id,
             donorName: row.donor_name || 'Anonymous',
             location: row.location,
+            coordinates: row.coordinates ? JSON.parse(row.coordinates) : null,
             status: row.status,
             priority: row.priority,
             qualityCondition: row.quality_condition,
@@ -83,12 +86,13 @@ export async function getNeeds() {
             urgency: row.urgency,
             description: row.description,
             location: row.location,
-            specialRequirements: row.special_requirements, // Note: DB column might need check
+            coordinates: row.coordinates ? JSON.parse(row.coordinates) : null,
+            specialRequirements: row.special_requirements,
             status: row.status,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
-            beneficiaryCount: row.beneficiary_count, // Note: DB column might need check
-            vulnerabilityLevel: row.vulnerability_level, // Note: DB column might need check
+            beneficiaryCount: row.beneficiary_count,
+            vulnerabilityLevel: row.vulnerability_level,
         }));
     } catch (error) {
         console.error("Failed to fetch needs:", error);
@@ -99,12 +103,14 @@ export async function getNeeds() {
 export async function createResource(data: ResourceData) {
     try {
         const id = crypto.randomUUID();
+        const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
+
         await turso.execute({
             sql: `
         INSERT INTO resources (
           id, type, name, description, quantity, unit, donor_id, 
-          location, priority, quality_condition, expiration_date, images, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          location, coordinates, priority, quality_condition, expiration_date, images, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `,
             args: [
                 id,
@@ -115,6 +121,7 @@ export async function createResource(data: ResourceData) {
                 data.unit,
                 data.donorId,
                 data.location,
+                coordinatesJson,
                 data.priority,
                 data.qualityCondition,
                 data.expirationDate || null,
@@ -132,28 +139,15 @@ export async function createResource(data: ResourceData) {
 export async function createNeed(data: NeedData) {
     try {
         const id = crypto.randomUUID();
-        // Note: We need to make sure the columns exist in the schema we created.
-        // Schema has: specialRequirements? No, schema has description. 
-        // Let's check schema.sql content again mentally.
-        // Schema: special_requirements is NOT in the CREATE TABLE statement I wrote earlier?
-        // Wait, let me check the schema I wrote in Step 660.
-        // Schema: 
-        // CREATE TABLE IF NOT EXISTS needs (
-        //   ...
-        //   description TEXT,
-        //   location TEXT,
-        //   ...
-        // );
-        // It seems I missed `special_requirements`, `beneficiary_count`, `vulnerability_level` in the SQL I wrote in Step 660?
-        // Let me quickly check the schema file content to be sure.
+        const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
 
         await turso.execute({
             sql: `
         INSERT INTO needs (
           id, requester_id, resource_type, required_quantity, unit, 
-          urgency, description, location, special_requirements, beneficiary_count, vulnerability_level,
+          urgency, description, location, coordinates, special_requirements, beneficiary_count, vulnerability_level,
           status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `,
             args: [
                 id,
@@ -164,6 +158,7 @@ export async function createNeed(data: NeedData) {
                 data.urgency,
                 data.description,
                 data.location,
+                coordinatesJson,
                 data.specialRequirements || null,
                 data.beneficiaryCount || 1,
                 data.vulnerabilityLevel || 'medium'
@@ -173,6 +168,34 @@ export async function createNeed(data: NeedData) {
         return { success: true, id };
     } catch (error) {
         console.error("Failed to create need:", error);
+        return { success: false, error };
+    }
+}
+
+export async function updateResourceStatus(id: string, status: string) {
+    try {
+        await turso.execute({
+            sql: `UPDATE resources SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            args: [status, id]
+        });
+        revalidatePath('/resources');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update resource status:", error);
+        return { success: false, error };
+    }
+}
+
+export async function updateNeedStatus(id: string, status: string) {
+    try {
+        await turso.execute({
+            sql: `UPDATE needs SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            args: [status, id]
+        });
+        revalidatePath('/resources');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update need status:", error);
         return { success: false, error };
     }
 }

@@ -18,6 +18,7 @@ export interface Job {
     technician_name?: string | null;
     status: JobStatus;
     location: string | null;
+    coordinates: string | null;
     urgency: UrgencyLevel;
     images: string | null;
     created_at: string;
@@ -33,6 +34,7 @@ export interface JobData {
     location?: string;
     urgency?: UrgencyLevel;
     images?: string[];
+    coordinates?: { lat: number; lng: number };
 }
 
 export async function getJobs(): Promise<Job[]> {
@@ -59,6 +61,7 @@ export async function getJobs(): Promise<Job[]> {
             technician_name: row.technician_name as string | null,
             status: row.status as JobStatus,
             location: row.location as string | null,
+            coordinates: row.coordinates as string | null,
             urgency: row.urgency as UrgencyLevel,
             images: row.images as string | null,
             created_at: row.created_at as string,
@@ -74,13 +77,14 @@ export async function createJob(data: JobData): Promise<{ success: boolean; erro
     try {
         const id = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const imagesJson = data.images && data.images.length > 0 ? JSON.stringify(data.images) : null;
+        const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
 
         await turso.execute({
             sql: `
         INSERT INTO jobs (
           id, title, description, job_type, requester_id,
-          location, urgency, images, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open')
+          location, coordinates, urgency, images, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')
       `,
             args: [
                 id,
@@ -89,6 +93,7 @@ export async function createJob(data: JobData): Promise<{ success: boolean; erro
                 data.job_type,
                 data.requester_id,
                 data.location || null,
+                coordinatesJson,
                 data.urgency || "medium",
                 imagesJson,
             ],

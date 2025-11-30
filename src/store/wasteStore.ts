@@ -32,7 +32,7 @@ interface WasteState {
   myReports: WasteReport[];
   activeReports: WasteReport[];
   isLoading: boolean;
-  createReport: (reportData: WasteReportData) => Promise<void>;
+  createReport: (reportData: WasteReportData) => Promise<{ success: boolean; error?: string }>;
   updateStatus: (reportId: string, status: WasteStatus) => Promise<void>;
   getWasteByLocation: (bounds: { north: number; south: number; east: number; west: number }) => WasteReport[];
   getHighRiskWaste: () => WasteReport[];
@@ -102,6 +102,7 @@ export const useWasteStore = create<WasteState>((set, get) => ({
     if (result.success) {
       await get().loadReports(reportData.reporter_id);
     }
+    return result;
   },
 
   updateStatus: async (reportId: string, status: WasteStatus) => {
