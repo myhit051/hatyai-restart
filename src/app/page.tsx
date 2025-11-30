@@ -1,18 +1,18 @@
 "use client";
-
+import Header from "@/components/Header";
 import StatusCard from "@/components/StatusCard";
 import ActionGrid from "@/components/ActionGrid";
 import RecentActivity from "@/components/RecentActivity";
-import { useAuthStore } from "@/store/authStore";
+import BottomNav from "@/components/BottomNav";
 
-export default function Home() {
-    const { user } = useAuthStore();
-
+const IndexPage = () => {
     return (
         <div className="min-h-screen bg-background pb-28">
+            <Header />
+
             <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
                 {/* Hero Status Section */}
-                <StatusCard userName={user?.name || "ผู้มาเยือน"} />
+                <StatusCard userName="สมชาย" />
 
                 {/* Main Action Grid */}
                 <section>
@@ -25,6 +25,10 @@ export default function Home() {
                 {/* Recent Activity */}
                 <RecentActivity />
             </main>
+
+            <BottomNav />
         </div>
     );
-}
+};
+
+export default IndexPage;
