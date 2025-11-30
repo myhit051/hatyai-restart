@@ -1,6 +1,9 @@
+"use client";
+
 import { Wrench, MapPin, Gift, Phone } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface ActionItem {
   id: string;
@@ -8,6 +11,7 @@ interface ActionItem {
   icon: React.ElementType;
   variant: "primary" | "alert" | "success" | "emergency";
   description: string;
+  href: string;
 }
 
 const actions: ActionItem[] = [
@@ -17,6 +21,7 @@ const actions: ActionItem[] = [
     icon: Wrench,
     variant: "primary",
     description: "ค้นหาความช่วยเหลือ",
+    href: "/repair",
   },
   {
     id: "report-waste",
@@ -24,6 +29,7 @@ const actions: ActionItem[] = [
     icon: MapPin,
     variant: "alert",
     description: "รายงานขยะตกค้าง",
+    href: "/waste",
   },
   {
     id: "donate",
@@ -31,6 +37,7 @@ const actions: ActionItem[] = [
     icon: Gift,
     variant: "success",
     description: "ช่วยเหลือผู้ประสบภัย",
+    href: "/resources",
   },
   {
     id: "emergency",
@@ -38,6 +45,7 @@ const actions: ActionItem[] = [
     icon: Phone,
     variant: "emergency",
     description: "ติดต่อหน่วยกู้ชีพ",
+    href: "/emergency",
   },
 ];
 
@@ -70,26 +78,27 @@ const ActionGrid = () => {
       {actions.map((action, index) => {
         const styles = variantStyles[action.variant];
         const Icon = action.icon;
-        
+
         return (
-          <Card
-            key={action.id}
-            className={cn(
-              "p-4 rounded-xl border cursor-pointer transition-all duration-200 tap-highlight-none",
-              "hover:scale-[1.02] active:scale-[0.98]",
-              "animate-fade-in",
-              styles.card
-            )}
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3", styles.icon)}>
-              <Icon className="w-6 h-6" />
-            </div>
-            <h3 className={cn("font-semibold text-base mb-0.5", styles.text)}>
-              {action.label}
-            </h3>
-            <p className="text-xs text-muted-foreground">{action.description}</p>
-          </Card>
+          <Link key={action.id} href={action.href} className="block">
+            <Card
+              className={cn(
+                "p-4 rounded-xl border cursor-pointer transition-all duration-200 tap-highlight-none",
+                "hover:scale-[1.02] active:scale-[0.98]",
+                "animate-fade-in",
+                styles.card
+              )}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3", styles.icon)}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <h3 className={cn("font-semibold text-base mb-0.5", styles.text)}>
+                {action.label}
+              </h3>
+              <p className="text-xs text-muted-foreground">{action.description}</p>
+            </Card>
+          </Link>
         );
       })}
     </div>

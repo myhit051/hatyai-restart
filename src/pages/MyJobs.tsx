@@ -1,10 +1,9 @@
+"use client";
 import { ClipboardList, MapPin, Clock, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import Header from "@/components/Header";
-import BottomNav from "@/components/BottomNav";
 
 interface JobItem {
   id: string;
@@ -99,7 +98,6 @@ const MyJobs = () => {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header />
 
       <main className="max-w-lg mx-auto px-4 py-5">
         <div className="flex items-center gap-3 mb-5">
@@ -145,8 +143,6 @@ const MyJobs = () => {
           </TabsContent>
         </Tabs>
       </main>
-
-      <BottomNav />
     </div>
   );
 };

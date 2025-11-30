@@ -1,10 +1,9 @@
+"use client";
 import { Map, MapPin, Wrench, Trash2, Filter } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Header from "@/components/Header";
-import BottomNav from "@/components/BottomNav";
 
 interface MapMarker {
   id: string;
@@ -41,7 +40,6 @@ const typeConfig = {
 const MapPage = () => {
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header />
 
       <main className="max-w-lg mx-auto">
         {/* Map Placeholder */}
@@ -53,7 +51,7 @@ const MapPage = () => {
               <p className="text-xs text-muted-foreground mt-1">OpenStreetMap จะแสดงที่นี่</p>
             </div>
           </div>
-          
+
           {/* Mock map markers */}
           <div className="absolute top-1/4 left-1/3 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg animate-pulse">
             <Wrench className="w-4 h-4 text-primary-foreground" />
@@ -125,8 +123,6 @@ const MapPage = () => {
           </div>
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 };

@@ -1,3 +1,5 @@
+"use client"
+
 import { MapPin, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +61,7 @@ const RecentActivity = () => {
       <div className="space-y-3">
         {activities.map((activity) => {
           const status = statusConfig[activity.status];
-          
+
           return (
             <Card
               key={activity.id}

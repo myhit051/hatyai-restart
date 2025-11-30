@@ -1,3 +1,5 @@
+"use client"
+
 import { Shield, ClipboardList, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
@@ -20,7 +22,7 @@ const StatusCard = ({ userName }: StatusCardProps) => {
           <Shield className="w-6 h-6" />
         </div>
       </div>
-      
+
       <div className="flex gap-4 pt-3 border-t border-primary-foreground/20">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">

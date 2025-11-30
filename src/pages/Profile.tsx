@@ -1,11 +1,10 @@
+"use client";
 import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, Award, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import Header from "@/components/Header";
-import BottomNav from "@/components/BottomNav";
 
 interface MenuItem {
   id: string;
@@ -25,7 +24,6 @@ const menuItems: MenuItem[] = [
 const Profile = () => {
   return (
     <div className="min-h-screen bg-background pb-28">
-      <Header />
 
       <main className="max-w-lg mx-auto px-4 py-5">
         {/* Profile Card */}
@@ -103,8 +101,6 @@ const Profile = () => {
           ออกจากระบบ
         </button>
       </main>
-
-      <BottomNav />
     </div>
   );
 };

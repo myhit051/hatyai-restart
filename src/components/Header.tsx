@@ -1,7 +1,8 @@
+"use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
   HomeIcon,
   WrenchScrewdriverIcon,
@@ -12,15 +13,15 @@ import {
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    router.push('/login');
   };
 
   const handleLogin = () => {
-    navigate('/login');
+    router.push('/login');
   };
 
   const navigationItems = [
@@ -48,7 +49,7 @@ const Header = () => {
                 key={item.path}
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate(item.path)}
+                onClick={() => router.push(item.path)}
                 className="flex items-center gap-2"
               >
                 <item.icon className="h-4 w-4" />
@@ -87,23 +88,7 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isAuthenticated && (
-          <nav className="md:hidden mt-3 flex justify-around">
-            {navigationItems.map((item) => (
-              <Button
-                key={item.path}
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(item.path)}
-                className="flex flex-col items-center gap-1 p-2"
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="text-xs">{item.label}</span>
-              </Button>
-            ))}
-          </nav>
-        )}
+
       </div>
     </header>
   );

@@ -1,5 +1,8 @@
+"use client";
+
 import { Home, ClipboardList, Map, User } from "lucide-react";
-import { NavLink as RouterNavLink, useLocation } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -17,20 +20,20 @@ const navItems: NavItem[] = [
 ];
 
 const BottomNav = () => {
-  const location = useLocation();
+  const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border animate-slide-up">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border animate-slide-up md:hidden">
       <div className="max-w-lg mx-auto px-2">
         <div className="flex items-center justify-around py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = pathname === item.path;
 
             return (
-              <RouterNavLink
+              <Link
                 key={item.id}
-                to={item.path}
+                href={item.path}
                 className={cn(
                   "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all tap-highlight-none hover:bg-secondary active:scale-95",
                   isActive ? "text-primary" : "text-muted-foreground"
@@ -47,7 +50,7 @@ const BottomNav = () => {
                 <span className={cn("text-xs font-medium", isActive && "text-primary")}>
                   {item.label}
                 </span>
-              </RouterNavLink>
+              </Link>
             );
           })}
         </div>
