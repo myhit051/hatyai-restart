@@ -3,12 +3,12 @@ import { turso } from "@/lib/turso";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: jobId } = await params;
     // In a real app, you'd get current user ID from auth
     const userId = request.headers.get("x-user-id") || "demo_user_id";
-    const jobId = params.id;
 
     const result = await turso.execute({
       sql: 'SELECT id FROM job_contacts WHERE job_id = ? AND user_id = ?',
@@ -29,12 +29,12 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: jobId } = await params;
     // In a real app, you'd get current user ID from auth
     const userId = request.headers.get("x-user-id") || "demo_user_id";
-    const jobId = params.id;
 
     const existingContact = await turso.execute({
       sql: 'SELECT id FROM job_contacts WHERE job_id = ? AND user_id = ?',
