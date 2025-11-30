@@ -103,7 +103,7 @@ export async function createJob(data: JobData): Promise<{ success: boolean; erro
         return { success: true };
     } catch (error) {
         console.error("Error creating job:", error);
-        return { success: false, error: "Failed to create job" };
+        return { success: false, error: error instanceof Error ? error.message : "Failed to create job" };
     }
 }
 

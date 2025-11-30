@@ -49,3 +49,47 @@ export async function updateUserRole(userId: string, role: string) {
         return { success: false, error: "Failed to update role" };
     }
 }
+
+export interface UserData {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    avatar?: string;
+    phone?: string;
+}
+
+export async function syncUser(user: UserData) {
+    try {
+        // Check if user exists
+        const result = await turso.execute({
+            sql: "SELECT id FROM users WHERE id = ?",
+            args: [user.id]
+        });
+
+        if (result.rows.length > 0) {
+            // Update existing user
+            await turso.execute({
+                sql: `
+                    UPDATE users 
+                    SET name = ?, email = ?, role = ?, updated_at = CURRENT_TIMESTAMP 
+                    WHERE id = ?
+                `,
+                args: [user.name, user.email, user.role, user.id]
+            });
+        } else {
+            // Insert new user
+            await turso.execute({
+                sql: `
+                    INSERT INTO users (id, name, email, role, created_at, updated_at) 
+                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                `,
+                args: [user.id, user.name, user.email, user.role]
+            });
+        }
+        return { success: true };
+    } catch (error) {
+        console.error("Error syncing user:", error);
+        return { success: false, error: "Failed to sync user" };
+    }
+}

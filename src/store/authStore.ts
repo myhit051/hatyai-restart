@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
+import { syncUser } from '@/app/actions/user';
 
 export type UserRole = 'victim' | 'volunteer' | 'technician' | 'donor' | 'coordinator';
 
@@ -59,6 +60,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             completedJobs: 0
           }
         };
+
+        // Sync user to Turso
+        syncUser({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          phone: user.phone,
+          avatar: user.profile.avatar
+        });
+
         set({ user, isAuthenticated: true, isLoading: false });
       } else {
         set({ user: null, isAuthenticated: false, isLoading: false });
@@ -96,6 +108,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             completedJobs: 0
           }
         };
+
+        // Sync user to Turso
+        await syncUser({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          phone: user.phone,
+          avatar: user.profile.avatar
+        });
+
         set({ user, isAuthenticated: true });
         return true;
       }
