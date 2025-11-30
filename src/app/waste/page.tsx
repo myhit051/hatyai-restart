@@ -289,7 +289,7 @@ const WasteDashboard = () => {
                                                 </div>
                                             </div>
 
-                                            {user && user.role === 'coordinator' && (
+                                            {user && (user.role === 'admin' || user.role === 'technician') && (
                                                 <div className="flex flex-col gap-2">
                                                     {report.status === 'reported' && (
                                                         <Button size="sm" onClick={() => handleUpdateStatus(report.id, 'acknowledged')}>

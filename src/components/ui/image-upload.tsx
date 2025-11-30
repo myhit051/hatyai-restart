@@ -12,7 +12,7 @@ interface ImageUploadProps {
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
-    value,
+    value = [],
     onChange,
     onRemove
 }) => {

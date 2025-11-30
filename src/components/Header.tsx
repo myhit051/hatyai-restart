@@ -10,7 +10,8 @@ import {
   HeartIcon,
   UserIcon,
   ClipboardDocumentListIcon,
-  MapIcon
+  MapIcon,
+  BriefcaseIcon
 } from "@heroicons/react/24/outline";
 
 const Header = () => {
@@ -28,6 +29,7 @@ const Header = () => {
 
   const navigationItems = [
     { icon: HomeIcon, label: 'หน้าแรก', path: '/' },
+    { icon: BriefcaseIcon, label: 'หางาน', path: '/jobs' },
     { icon: WrenchScrewdriverIcon, label: 'ซ่อมแซม', path: '/repair' },
     { icon: TrashIcon, label: 'ขยะ', path: '/waste' },
     { icon: HeartIcon, label: 'บริจาค', path: '/resources' },

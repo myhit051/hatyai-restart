@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, ClipboardList, Map, User } from "lucide-react";
+import { Home, ClipboardList, Briefcase, Map, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: "home", label: "หน้าหลัก", icon: Home, path: "/" },
-  { id: "jobs", label: "งานของฉัน", icon: ClipboardList, path: "/my-jobs" },
+  { id: "all-jobs", label: "หางาน", icon: Briefcase, path: "/jobs" },
+  { id: "my-jobs", label: "งานของฉัน", icon: ClipboardList, path: "/my-jobs" },
   { id: "map", label: "แผนที่", icon: Map, path: "/map" },
   { id: "profile", label: "โปรไฟล์", icon: User, path: "/profile" },
 ];

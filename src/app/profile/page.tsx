@@ -97,11 +97,9 @@ const ProfilePage = () => {
                                 <SelectValue placeholder="เลือกบทบาท" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="victim">ผู้ประสบภัย (Victim)</SelectItem>
-                                <SelectItem value="volunteer">อาสาสมัคร (Volunteer)</SelectItem>
-                                <SelectItem value="technician">ช่างซ่อม (Technician)</SelectItem>
-                                <SelectItem value="donor">ผู้บริจาค (Donor)</SelectItem>
-                                <SelectItem value="coordinator">ผู้ประสานงาน (Coordinator)</SelectItem>
+                                <SelectItem value="general_user">ผู้ใช้งานทั่วไป (General User)</SelectItem>
+                                <SelectItem value="technician">ช่าง/คนรับงาน (Technician)</SelectItem>
+                                <SelectItem value="admin">ผู้ดูแลระบบ (Admin)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

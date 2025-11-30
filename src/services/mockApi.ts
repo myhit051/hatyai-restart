@@ -22,7 +22,7 @@ export class MockApiService {
           name: "ผู้ทดสอบ ระบบ",
           email: email,
           phone: "0812345678",
-          role: "volunteer" as const,
+          role: "general_user" as const,
           profile: {
             avatar: "",
             skills: ["ช่วยเหลือ", "ฟื้นฟู"],

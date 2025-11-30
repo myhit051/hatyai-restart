@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
 import { syncUser } from '@/app/actions/user';
 
-export type UserRole = 'victim' | 'volunteer' | 'technician' | 'donor' | 'coordinator';
+export type UserRole = 'general_user' | 'technician' | 'admin';
 
 export interface User {
   id: string;
@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           email: session.user.email!,
           name: metadata.name || session.user.email?.split('@')[0] || 'User',
           phone: metadata.phone || '',
-          role: (metadata.role as UserRole) || 'volunteer',
+          role: (metadata.role as UserRole) || 'general_user',
           profile: {
             avatar: metadata.avatar_url || '',
             skills: metadata.skills || [],
@@ -98,7 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           email: data.user.email!,
           name: metadata.name || email.split('@')[0],
           phone: metadata.phone || '',
-          role: (metadata.role as UserRole) || 'volunteer',
+          role: (metadata.role as UserRole) || 'general_user',
           profile: {
             avatar: metadata.avatar_url || '',
             skills: metadata.skills || [],
@@ -160,7 +160,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           data: {
             name: userData.name,
             phone: userData.phone,
-            role: userData.role || 'volunteer',
+            role: userData.role || 'general_user',
             // Add other profile fields to metadata for now
             location: userData.profile?.location,
             skills: userData.profile?.skills,

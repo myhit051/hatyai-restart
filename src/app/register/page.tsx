@@ -19,7 +19,7 @@ const Register = () => {
         phone: "",
         password: "",
         confirmPassword: "",
-        role: "volunteer" as UserRole
+        role: "general_user" as UserRole
     });
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -69,11 +69,8 @@ const Register = () => {
     };
 
     const roleOptions = [
-        { value: "victim", label: "ผู้ประสบภัย" },
-        { value: "volunteer", label: "อาสาสมัคร" },
-        { value: "technician", label: "ช่างผู้เชี่ยวชาญ" },
-        { value: "donor", label: "ผู้บริจาค" },
-        { value: "coordinator", label: "ผู้ประสานงาน" }
+        { value: "general_user", label: "ผู้ใช้งานทั่วไป" },
+        { value: "technician", label: "ช่าง/คนรับงาน" }
     ];
 
     return (

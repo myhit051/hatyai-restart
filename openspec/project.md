@@ -1,7 +1,7 @@
 # Project Context
 
 ## Purpose
-โปรเจค Hat Yai Restart (รวมพลังกู้คืนหาดใหญ่) เป็น Progressive Web Application (PWA) สำหรับเป็นศูนย์กลางข้อมูลและการจัดการทรัพยากรสำหรับการฟื้นฟูเมืองหาดใหญ่หลังน้ำท่วม สร้างขึ้นเพื่อเชื่อมโยงความช่วยเหลือระหว่างผู้ประสบภัยและช่าง/จิตอาสา บริหารจัดการขยะ และจัดการการบริจาคสิ่งของอย่างมีประสิทธิภาพ
+โปรเจค Hat Yai Restart (รวมพลังกู้คืนหาดใหญ่) เป็น Progressive Web Application (PWA) สำหรับเป็นศูนย์กลางข้อมูลและการจัดการทรัพยากรสำหรับการฟื้นฟูเมืองหาดใหญ่หลังน้ำท่วม สร้างขึ้นเพื่อเชื่อมโยงความช่วยเหลือระหว่างผู้ใช้งานทั่วไป (General Users) และช่าง/คนรับงาน (Technicians/Workers) บริหารจัดการขยะ และจัดการการบริจาคสิ่งของอย่างมีประสิทธิภาพ
 
 ## Tech Stack
 - **Frontend**: Next.js (App Router) + TypeScript
@@ -47,7 +47,7 @@
 โปรเจคนี้มุ่งเน้นการฟื้นฟูเมืองหาดใหญ่หลังน้ำท่วม ประกอบด้วยฟีเจอร์หลัก 5 ส่วน:
 
 ### 1. User Authentication & Management
-- ผู้ใช้ 3 กลุ่ม: Requester (ผู้ประสบภัย), Provider (ช่าง/จิตอาสา), Admin
+- ผู้ใช้ 4 กลุ่ม: General User (No Login), General User (Logged In), Technician/Worker, Admin
 - Login ผ่าน Google Account (Gmail) ด้วย Supabase Auth
 
 ### 2. Marketplace System
@@ -62,7 +62,7 @@
 - การนำทางไปยังสถานที่ (Deep Link to Google Maps)
 
 ### 4. Donation Management
-- ระบบ Wishlist ของสิ่งของที่ผู้ประสบภัยต้องการ
+- ระบบ Wishlist ของสิ่งของที่ผู้ใช้งานทั่วไปต้องการ
 - การจับคู่ความต้องการกับผู้บริจาค (Demand-Supply Matching)
 
 ### 5. Emergency Directory
@@ -81,7 +81,7 @@
 
 ## Current Status
 - **Progress**: Project Planning & Specification Phase (PRD v1.0.0 approved)
-- **Epic Structure**: 5 Epics ที่วางแผนไว้ครบถ้วน (Foundation, Marketplace Requester, Marketplace Provider, Mapping, Donation)
+- **Epic Structure**: 5 Epics ที่วางแผนไว้ครบถ้วน (Foundation, Marketplace General User, Marketplace Technician, Mapping, Donation)
 - **Next Steps**: เริ่ม Epic 1: Foundation & Identity - Project Initialization, Authentication Setup, Dashboard UI
 - **Ready to Implement**: Stories 1.1-1.3 มี Acceptance Criteria ที่ชัดเจน
 

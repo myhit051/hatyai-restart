@@ -517,7 +517,7 @@ const ResourceDashboard = () => {
                                                     </div>
 
                                                     <div className="flex flex-col gap-2">
-                                                        {matchedNeeds.length > 0 && user?.role === 'coordinator' && (
+                                                        {matchedNeeds.length > 0 && user?.role === 'admin' && (
                                                             <Select onValueChange={(needId) => handleMatchResource(resource.id, needId)}>
                                                                 <SelectTrigger className="w-32">
                                                                     <SelectValue placeholder="จับคู่" />

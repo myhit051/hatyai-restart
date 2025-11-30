@@ -29,12 +29,31 @@
 ## 2. Requirements
 
 ### Functional Requirements
-* **FR1 - User Authentication:** ระบบรองรับการเข้าสู่ระบบผ่าน **Google Account (Gmail)** เท่านั้นในระยะแรก โดยใช้ **Supabase Auth** และแบ่งสิทธิ์ผู้ใช้เป็น 3 กลุ่ม: Requester (ผู้ประสบภัย), Provider (ช่าง/จิตอาสา), Admin
-* **FR2 - Job Posting & Management:** ผู้ประสบภัยสามารถสร้างคำร้อง (Job) ระบุประเภทงาน (ล้าง/ซ่อม/ขนย้าย) แนบรูปภาพ และพิกัด GPS ได้
+* **FR1 - User Authentication & Roles:** ระบบรองรับการเข้าสู่ระบบผ่าน **Google Account (Gmail)** โดยใช้ **Supabase Auth** และแบ่งสิทธิ์ผู้ใช้เป็น 4 ระดับ:
+    1.  **General User (No Login):**
+        *   ดูรายการงาน (Jobs) และรายการอื่นๆ ได้
+        *   **ไม่เห็น** รายละเอียดเบอร์โทรและที่อยู่ปักหมุดของผู้แจ้ง
+        *   **ไม่สามารถ** กดปุ่มแจ้งงาน/แจ้งเหตุได้ (ถ้ากดจะเด้งไปหน้า Login ทันที)
+    2.  **General User (Logged In):**
+        *   แจ้งฟอร์มต่างๆ ได้ (โพสต์งาน, แจ้งเหตุ)
+        *   ดูสถานะฟอร์มของตัวเองได้
+        *   ดูรายละเอียดงานของคนอื่นได้ รวมถึงเห็นเบอร์ติดต่อและที่อยู่ปักหมุด
+        *   **ไม่สามารถ** กดรับงานได้ (ถ้ากดรับงาน ระบบจะแนะนำให้สมัครเป็นช่างซ่อม/คนรับงานก่อน)
+        *   แก้ไขข้อมูลส่วนตัวได้
+    3.  **Technician/Worker (Logged In):**
+        *   สิทธิ์เหมือน "General User (Logged In)" ทุกประการ
+        *   **สามารถ** กดรับงานได้
+        *   **สามารถ** โพสต์รับจ้างงาน (Service Offering) ได้
+    4.  **Admin:**
+        *   ทำได้ทุกอย่าง
+        *   เข้าหน้า Admin Dashboard ได้
+        *   แก้ไขสิทธิ์ของผู้ใช้แต่ละคนได้
+        *   เปลี่ยนสถานะของรายการต่างๆ ได้
+* **FR2 - Job Posting & Management:** ผู้ใช้งานทั่วไป (General User) สามารถสร้างคำร้อง (Job) ระบุประเภทงาน (ล้าง/ซ่อม/ขนย้าย) แนบรูปภาพ และพิกัด GPS ได้
 * **FR3 - Price Guideline:** ระบบต้องแสดง "ราคากลางแนะนำ" สำหรับงานแต่ละประเภทเพื่อให้ผู้ใช้รับทราบก่อนตกลงจ้าง
-* **FR4 - Provider Job Acceptance:** ผู้ให้บริการสามารถดูรายการงาน (Job Feed) คัดกรองตามระยะทาง และกดรับงานเพื่ออัปเดตสถานะได้
+* **FR4 - Job Acceptance:** ช่าง/คนรับงาน (Technician/Worker) สามารถดูรายการงาน (Job Feed) คัดกรองตามระยะทาง และกดรับงานเพื่ออัปเดตสถานะได้
 * **FR5 - Waste Reporting (Heatmap):** ผู้ใช้สามารถถ่ายรูปและปักหมุดจุดขยะชิ้นใหญ่ ระบบแสดงผลรวมเป็น Heatmap บนแผนที่
-* **FR6 - Donation Wishlist:** ผู้ประสบภัยสร้างรายการของที่ต้องการ และผู้บริจาคเลือกส่งของตามรายการได้
+* **FR6 - Donation Wishlist:** ผู้ใช้งานทั่วไปสร้างรายการของที่ต้องการ และผู้บริจาคเลือกส่งของตามรายการได้
 * **FR7 - Emergency Directory:** หน้ารวมเบอร์โทรฉุกเฉินพร้อมปุ่ม Tap-to-Call
 
 ### Non-Functional Requirements
@@ -86,8 +105,8 @@
 ## 5. Epic List
 
 * **Epic 1: Foundation & Identity:** เตรียม Project Structure, Database, Auth และ Dashboard พื้นฐาน
-* **Epic 2: Marketplace - Requester Focus:** ระบบโพสต์งาน, ระบุพิกัด, และจัดการงานฝั่งผู้ประสบภัย
-* **Epic 3: Marketplace - Provider Focus:** ระบบค้นหางาน, รับงาน, และอัปเดตสถานะฝั่งช่าง/จิตอาสา
+* **Epic 2: Marketplace - General User Focus:** ระบบโพสต์งาน, ระบุพิกัด, และจัดการงานฝั่งผู้แจ้งงาน
+* **Epic 3: Marketplace - Technician/Worker Focus:** ระบบค้นหางาน, รับงาน, และอัปเดตสถานะฝั่งช่าง/คนรับงาน
 * **Epic 4: Mapping & Waste Management:** ระบบแผนที่ Heatmap, แจ้งจุดขยะ, และนำทาง
 * **Epic 5: Donation & Emergency:** ระบบ Wishlist ของบริจาค และสมุดโทรศัพท์ฉุกเฉิน
 
@@ -98,35 +117,35 @@
 * **Story 1.1 Project Initialization (COMPLETED):**
     * **As a** Developer, **I want** to initialize the React + Vite project with Tailwind, shadcn/ui, **so that** the development environment is ready.
     * **AC:** ✅ Vite app runs locally, components and styling work correctly.
-* **Story 1.2 Authentication Setup (PENDING):**
-    * **As a** User, **I want** to login with my Google Account, **so that** I can access the platform securely.
-    * **AC:** ⏳ Login with Google via Supabase works, User profile is created in database.
+* **Story 1.2 Authentication & Role Setup (PENDING):**
+    *   **As a** User, **I want** to login with my Google Account and have a defined role, **so that** I can access features appropriate to my status.
+    *   **AC:** ⏳ Login with Google via Supabase works. Database stores user profile with 'role' field (default: General User). Admin can update role to Technician/Worker.
 * **Story 1.3 Layout & Dashboard UI (PENDING):**
     * **As a** User, **I want** to see a clean Dashboard with main menu options, **so that** I can navigate to different services.
     * **AC:** ⏳ Responsive Layout with main navigation, Dashboard shows menu cards.
 
-### Epic 2: Marketplace - Requester Focus
-**Goal:** ให้ผู้ประสบภัยสามารถขอความช่วยเหลือได้สำเร็จ
+### Epic 2: Marketplace - General User Focus
+**Goal:** ให้ผู้ใช้งานทั่วไปสามารถขอความช่วยเหลือได้สำเร็จ
 * **Story 2.1 Job Data Model & API (PENDING):**
     * **As a** Developer, **I want** to define the Job schema and create CRUD APIs, **so that** job data can be stored.
     * **AC:** ⏳ Schema includes title, type, photos, location, status. API endpoints work.
 * **Story 2.2 Job Posting UI (PENDING):**
-    * **As a** Requester, **I want** to post a job request with photos and location, **so that** I can find help.
+    *   **As a** General User (Logged In), **I want** to post a job request with photos and location, **so that** I can find help.
     * **AC:** ⏳ Form allows job type, photo upload, GPS location, saving to database.
 * **Story 2.3 My Requests View (PENDING):**
-    * **As a** Requester, **I want** to see the status of my posted jobs, **so that** I know if someone has accepted help.
+    *   **As a** General User (Logged In), **I want** to see the status of my posted jobs, **so that** I know if someone has accepted help.
     * **AC:** ⏳ List view of own jobs with status tags (Waiting, In Progress, Done).
 
-### Epic 3: Marketplace - Provider Focus
-**Goal:** ให้ช่างและจิตอาสาสามารถค้นหาและรับงานได้
+### Epic 3: Marketplace - Technician/Worker Focus
+**Goal:** ให้ช่างและคนรับงานสามารถค้นหาและรับงานได้
 * **Story 3.1 Job Feed & Filter (PENDING):**
-    * **As a** Provider, **I want** to see available jobs sorted by distance, **so that** I can choose jobs nearby.
+    *   **As a** Technician/Worker, **I want** to see available jobs sorted by distance, **so that** I can choose jobs nearby.
     * **AC:** ⏳ List of 'Waiting' jobs, calculated distance from user, filter by job category.
 * **Story 3.2 Job Acceptance Logic (PENDING):**
-    * **As a** Provider, **I want** to accept a job, **so that** I can start working and the requester knows I'm coming.
-    * **AC:** ⏳ Clicking 'Accept' updates job status to 'In Progress', assigns Provider ID to Job.
+    *   **As a** Technician/Worker, **I want** to accept a job, **so that** I can start working and the requester knows I'm coming.
+    *   **AC:** ⏳ Clicking 'Accept' updates job status to 'In Progress', assigns Technician ID to Job.
 * **Story 3.3 Job Completion (PENDING):**
-    * **As a** Provider, **I want** to mark a job as complete, **so that** the work is recorded.
+    *   **As a** Technician/Worker, **I want** to mark a job as complete, **so that** the work is recorded.
     * **AC:** ⏳ Button to complete job, updates status to 'Done'.
 
 ### Epic 4: Mapping & Waste Management
@@ -141,7 +160,7 @@
     * **As a** User, **I want** to see a heatmap of waste reports, **so that** I can see critical areas.
     * **AC:** ⏳ Map renders heatmap layer based on density of waste reports.
 * **Story 4.4 Navigation Deep Link (PENDING):**
-    * **As a** Provider, **I want** to click a button to navigate to a job/waste location, **so that** I can drive there easily.
+    *   **As a** Technician/Worker, **I want** to click a button to navigate to a job/waste location, **so that** I can drive there easily.
     * **AC:** ⏳ 'Navigate' button opens Google Maps App with destination coordinates.
 
 ### Epic 5: Donation & Emergency
@@ -150,5 +169,5 @@
     * **As a** User, **I want** to see a list of emergency numbers and call them instantly, **so that** I can get urgent help.
     * **AC:** ⏳ Static page with categorized numbers, Tap-to-call functionality implemented.
 * **Story 5.2 Donation Wishlist (PENDING):**
-    * **As a** Requester, **I want** to list items I need, **so that** donors can send the right things.
+    *   **As a** General User, **I want** to list items I need, **so that** donors can send the right things.
     * **AC:** ⏳ Simple CRUD for 'Wishlist Items', Public view for donors to see needs.
