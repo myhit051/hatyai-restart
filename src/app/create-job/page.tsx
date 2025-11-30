@@ -12,12 +12,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPicker } from "@/components/MapPicker";
+import LocationPicker from "@/components/LocationPicker";
 import ImageUpload from "@/components/ui/image-upload";
 import { toast } from "@/hooks/use-toast";
 import { getJobCategories, createGeneralJob, JobData, PostingType } from "@/app/actions/general-jobs";
 import { JobCategory } from "@/app/actions/general-jobs";
-import LocationPicker from "@/components/LocationPicker";
 import { CalendarIcon, MapPinIcon, DollarSignIcon, UserIcon } from "lucide-react";
 
 const POSTING_TYPES = [
@@ -410,8 +409,10 @@ export default function CreateJobPage() {
           </CardHeader>
           <CardContent>
             <LocationPicker
-              onLocationSelect={(loc) => setLocation(loc)}
-              initialLocation={location}
+              value={location ? { lat: location.lat, lng: location.lng } : null}
+              onChange={(coords) => setLocation(prev => ({ ...coords, address: prev?.address || "" }))}
+              addressValue={location?.address || ""}
+              onAddressChange={(addr) => setLocation(prev => prev ? { ...prev, address: addr } : { lat: 0, lng: 0, address: addr })}
             />
           </CardContent>
         </Card>
@@ -425,9 +426,9 @@ export default function CreateJobPage() {
           </CardHeader>
           <CardContent>
             <ImageUpload
-              onImagesChange={(images) => handleInputChange("images", images)}
-              maxImages={5}
-              initialImages={formData.images || []}
+              value={formData.images || []}
+              onChange={(images) => handleInputChange("images", images)}
+              onRemove={(url) => handleInputChange("images", (formData.images || []).filter(img => img !== url))}
             />
           </CardContent>
         </Card>
