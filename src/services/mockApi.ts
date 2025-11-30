@@ -1,7 +1,9 @@
 // Mock API Services for Development
 // In production, replace with actual API calls
 
-import { RepairJob, WasteReport, Resource, ResourceNeed } from "@/store";
+import { RepairJob } from "@/store/jobStore";
+import { WasteReport } from "@/store/wasteStore";
+import { Resource, ResourceNeed } from "@/store/resourceStore";
 
 export class MockApiService {
   private static delay(ms: number = 1000): Promise<void> {

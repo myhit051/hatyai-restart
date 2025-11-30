@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import AuthLayout from "@/components/AuthLayout";
+import SearchParamsProvider from "@/components/SearchParamsProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,27 @@ const Login = () => {
 
     const { login, loginWithGoogle } = useAuthStore();
     const router = useRouter();
+
+    return (
+        <SearchParamsProvider>
+            <LoginContent
+                login={login}
+                loginWithGoogle={loginWithGoogle}
+                router={router}
+            />
+        </SearchParamsProvider>
+    );
+};
+
+const LoginContent: React.FC<{
+    login: any;
+    loginWithGoogle: any;
+    router: any;
+}> = ({ login, loginWithGoogle, router }) => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const searchParams = useSearchParams();
 
     // Get the location they were trying to go to
@@ -43,10 +65,10 @@ const Login = () => {
     };
 
     return (
-        <AuthLayout
-            title="เข้าสู่ระบบ"
-            subtitle="เข้าสู่ระบบเพื่อเริ่มต้นการช่วยเหลือและฟื้นฟูหาดใหญ่"
-        >
+    <AuthLayout
+        title="เข้าสู่ระบบ"
+        subtitle="เข้าสู่ระบบเพื่อเริ่มต้นการช่วยเหลือและฟื้นฟูหาดใหญ่"
+    >
             <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                     <Alert variant="destructive">

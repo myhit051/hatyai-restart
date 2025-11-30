@@ -4,7 +4,7 @@
 import MockApiService from "./mockApi";
 
 // Toggle this for development vs production
-const USE_MOCK_API = import.meta.env.DEV || true; // Set to false when real API is ready
+const USE_MOCK_API = process.env.NODE_ENV === 'development' || true; // Set to false when real API is ready
 
 export interface ApiResponse<T = any> {
   success: boolean;
