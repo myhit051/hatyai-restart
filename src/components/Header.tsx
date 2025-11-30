@@ -8,7 +8,9 @@ import {
   WrenchScrewdriverIcon,
   TrashIcon,
   HeartIcon,
-  UserIcon
+  UserIcon,
+  ClipboardDocumentListIcon,
+  MapIcon
 } from "@heroicons/react/24/outline";
 
 const Header = () => {
@@ -29,6 +31,8 @@ const Header = () => {
     { icon: WrenchScrewdriverIcon, label: 'ซ่อมแซม', path: '/repair' },
     { icon: TrashIcon, label: 'ขยะ', path: '/waste' },
     { icon: HeartIcon, label: 'บริจาค', path: '/resources' },
+    { icon: MapIcon, label: 'แผนที่', path: '/map' },
+    { icon: ClipboardDocumentListIcon, label: 'งานของฉัน', path: '/my-jobs' },
   ];
 
   return (
