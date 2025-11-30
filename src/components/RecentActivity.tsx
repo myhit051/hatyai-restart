@@ -5,54 +5,55 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string;
   title: string;
   location: string;
-  status: "pending" | "in-progress" | "completed";
+  status: string;
   time: string;
 }
 
-const activities: ActivityItem[] = [
-  {
-    id: "1",
-    title: "ต้องการรถยกสูง",
-    location: "ซอย 3 เพชรเกษม",
-    status: "pending",
-    time: "10 นาทีที่แล้ว",
-  },
-  {
-    id: "2",
-    title: "ขยะตู้เสื้อผ้า",
-    location: "ตลาดกิมหยง",
-    status: "in-progress",
-    time: "25 นาทีที่แล้ว",
-  },
-  {
-    id: "3",
-    title: "ต้องการช่างไฟฟ้า",
-    location: "หาดใหญ่ใน",
-    status: "completed",
-    time: "1 ชั่วโมงที่แล้ว",
-  },
-];
+interface RecentActivityProps {
+  activities?: ActivityItem[];
+}
 
-const statusConfig = {
-  pending: {
-    label: "รอรับเรื่อง",
-    className: "bg-alert/10 text-alert border-alert/20",
-  },
-  "in-progress": {
-    label: "กำลังดำเนินการ",
-    className: "bg-primary/10 text-primary border-primary/20",
-  },
-  completed: {
-    label: "เสร็จสิ้น",
-    className: "bg-success/10 text-success border-success/20",
-  },
+const statusConfig: Record<string, { label: string; className: string }> = {
+  // General / Job
+  open: { label: "รอรับเรื่อง", className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
+  in_progress: { label: "กำลังดำเนินการ", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  completed: { label: "เสร็จสิ้น", className: "bg-green-500/10 text-green-500 border-green-500/20" },
+  cancelled: { label: "ยกเลิก", className: "bg-red-500/10 text-red-500 border-red-500/20" },
+
+  // Waste
+  reported: { label: "แจ้งแล้ว", className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
+  acknowledged: { label: "รับเรื่องแล้ว", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  cleared: { label: "กำจัดแล้ว", className: "bg-green-500/10 text-green-500 border-green-500/20" },
+
+  // Resource
+  available: { label: "ว่าง", className: "bg-green-500/10 text-green-500 border-green-500/20" },
+  assigned: { label: "จองแล้ว", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  distributed: { label: "ส่งมอบแล้ว", className: "bg-gray-500/10 text-gray-500 border-gray-500/20" },
+
+  // Need
+  pending: { label: "รอความช่วยเหลือ", className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
+  matched: { label: "จับคู่แล้ว", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  fulfilled: { label: "ได้รับแล้ว", className: "bg-green-500/10 text-green-500 border-green-500/20" },
 };
 
-const RecentActivity = () => {
+const RecentActivity = ({ activities = [] }: RecentActivityProps) => {
+  if (activities.length === 0) {
+    return (
+      <section className="animate-fade-in" style={{ animationDelay: "400ms" }}>
+        <h2 className="text-lg font-semibold text-foreground mb-3">
+          อัปเดตล่าสุดแถวนี้
+        </h2>
+        <Card className="p-6 text-center text-muted-foreground">
+          <p>ยังไม่มีกิจกรรมล่าสุด</p>
+        </Card>
+      </section>
+    );
+  }
+
   return (
     <section className="animate-fade-in" style={{ animationDelay: "400ms" }}>
       <h2 className="text-lg font-semibold text-foreground mb-3">
@@ -60,7 +61,7 @@ const RecentActivity = () => {
       </h2>
       <div className="space-y-3">
         {activities.map((activity) => {
-          const status = statusConfig[activity.status];
+          const status = statusConfig[activity.status] || { label: activity.status, className: "bg-gray-100 text-gray-500" };
 
           return (
             <Card
@@ -74,7 +75,7 @@ const RecentActivity = () => {
                   </h3>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                     <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="truncate">{activity.location}</span>
+                    <span className="truncate">{activity.location || "ไม่ระบุตำแหน่ง"}</span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />

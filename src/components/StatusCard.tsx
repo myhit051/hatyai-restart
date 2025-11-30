@@ -5,9 +5,11 @@ import { Card } from "@/components/ui/card";
 
 interface StatusCardProps {
   userName: string;
+  activeJobsCount?: number;
+  donationsCount?: number;
 }
 
-const StatusCard = ({ userName }: StatusCardProps) => {
+const StatusCard = ({ userName, activeJobsCount = 0, donationsCount = 0 }: StatusCardProps) => {
   return (
     <Card className="bg-gradient-to-br from-primary to-primary/90 text-primary-foreground p-5 rounded-2xl shadow-action animate-fade-in">
       <div className="flex items-start justify-between mb-4">
@@ -30,7 +32,7 @@ const StatusCard = ({ userName }: StatusCardProps) => {
           </div>
           <div>
             <p className="text-xs opacity-75">งานที่แจ้ง</p>
-            <p className="text-lg font-bold">2</p>
+            <p className="text-lg font-bold">{activeJobsCount}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -39,7 +41,7 @@ const StatusCard = ({ userName }: StatusCardProps) => {
           </div>
           <div>
             <p className="text-xs opacity-75">การบริจาค</p>
-            <p className="text-lg font-bold">1</p>
+            <p className="text-lg font-bold">{donationsCount}</p>
           </div>
         </div>
       </div>

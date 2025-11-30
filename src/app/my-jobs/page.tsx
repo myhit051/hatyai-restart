@@ -1,69 +1,57 @@
 "use client";
+import { useEffect, useState } from "react";
 import { ClipboardList, MapPin, Clock, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
+import { useJobStore } from "@/store/jobStore";
+import { useWasteStore } from "@/store/wasteStore";
+import { useResourceStore } from "@/store/resourceStore";
 
 interface JobItem {
     id: string;
     title: string;
     location: string;
-    status: "pending" | "in-progress" | "completed";
-    type: "help" | "waste" | "donation";
+    status: string;
+    type: "help" | "waste" | "donation" | "need";
     date: string;
+    originalData?: any;
 }
 
-const myJobs: JobItem[] = [
-    {
-        id: "1",
-        title: "ต้องการช่างไฟฟ้าซ่อมปลั๊ก",
-        location: "บ้านเลขที่ 42 ซอยเพชรเกษม 3",
-        status: "in-progress",
-        type: "help",
-        date: "28 พ.ย. 2568",
-    },
-    {
-        id: "2",
-        title: "แจ้งขยะตู้เย็นเสีย",
-        location: "หน้าบ้าน ซอย 5",
-        status: "pending",
-        type: "waste",
-        date: "27 พ.ย. 2568",
-    },
-    {
-        id: "3",
-        title: "บริจาคเสื้อผ้า 20 ชิ้น",
-        location: "ศูนย์พักพิงชั่วคราว",
-        status: "completed",
-        type: "donation",
-        date: "26 พ.ย. 2568",
-    },
-];
+const statusConfig: Record<string, { label: string; className: string }> = {
+    // General / Job
+    open: { label: "รอรับเรื่อง", className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
+    in_progress: { label: "กำลังดำเนินการ", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+    completed: { label: "เสร็จสิ้น", className: "bg-green-500/10 text-green-500 border-green-500/20" },
+    cancelled: { label: "ยกเลิก", className: "bg-red-500/10 text-red-500 border-red-500/20" },
 
-const statusConfig = {
-    pending: {
-        label: "รอรับเรื่อง",
-        className: "bg-alert/10 text-alert border-alert/20",
-    },
-    "in-progress": {
-        label: "กำลังดำเนินการ",
-        className: "bg-primary/10 text-primary border-primary/20",
-    },
-    completed: {
-        label: "เสร็จสิ้น",
-        className: "bg-success/10 text-success border-success/20",
-    },
+    // Waste
+    reported: { label: "แจ้งแล้ว", className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
+    acknowledged: { label: "รับเรื่องแล้ว", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+    cleared: { label: "กำจัดแล้ว", className: "bg-green-500/10 text-green-500 border-green-500/20" },
+
+    // Resource
+    available: { label: "ว่าง", className: "bg-green-500/10 text-green-500 border-green-500/20" },
+    assigned: { label: "จองแล้ว", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+    distributed: { label: "ส่งมอบแล้ว", className: "bg-gray-500/10 text-gray-500 border-gray-500/20" },
+
+    // Need
+    pending: { label: "รอความช่วยเหลือ", className: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
+    matched: { label: "จับคู่แล้ว", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+    fulfilled: { label: "ได้รับแล้ว", className: "bg-green-500/10 text-green-500 border-green-500/20" },
 };
 
 const typeConfig = {
-    help: { label: "ขอความช่วยเหลือ", color: "text-primary" },
-    waste: { label: "แจ้งขยะ", color: "text-alert" },
-    donation: { label: "บริจาค", color: "text-success" },
+    help: { label: "งานซ่อม", color: "text-blue-500" },
+    waste: { label: "แจ้งขยะ", color: "text-red-500" },
+    donation: { label: "บริจาค", color: "text-green-500" },
+    need: { label: "ขอความช่วยเหลือ", color: "text-orange-500" },
 };
 
 const JobCard = ({ job }: { job: JobItem }) => {
-    const status = statusConfig[job.status];
+    const status = statusConfig[job.status] || { label: job.status, className: "bg-gray-100 text-gray-500" };
     const type = typeConfig[job.type];
 
     return (
@@ -77,7 +65,7 @@ const JobCard = ({ job }: { job: JobItem }) => {
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="truncate">{job.location}</span>
+                <span className="truncate">{job.location || "ไม่ระบุตำแหน่ง"}</span>
             </div>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -93,12 +81,98 @@ const JobCard = ({ job }: { job: JobItem }) => {
 };
 
 const MyJobsPage = () => {
-    const activeJobs = myJobs.filter((j) => j.status !== "completed");
-    const completedJobs = myJobs.filter((j) => j.status === "completed");
+    const { user } = useAuthStore();
+    const { myJobs: repairJobs, loadJobs } = useJobStore();
+    const { myReports: wasteReports, loadReports } = useWasteStore();
+    const { resources, needs, loadData: loadResourceData } = useResourceStore();
+    const [allJobs, setAllJobs] = useState<JobItem[]>([]);
+
+    useEffect(() => {
+        if (user) {
+            loadJobs(user.id);
+            loadReports(user.id);
+            loadResourceData();
+        }
+    }, [user, loadJobs, loadReports, loadResourceData]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        const jobs: JobItem[] = [];
+
+        // 1. Repair Jobs
+        repairJobs.forEach(job => {
+            jobs.push({
+                id: `repair-${job.id}`,
+                title: job.title,
+                location: job.location,
+                status: job.status,
+                type: "help",
+                date: new Date(job.createdAt).toLocaleDateString('th-TH'),
+                originalData: job
+            });
+        });
+
+        // 2. Waste Reports
+        wasteReports.forEach(report => {
+            jobs.push({
+                id: `waste-${report.id}`,
+                title: `แจ้งขยะ: ${report.wasteType}`,
+                location: report.location,
+                status: report.status,
+                type: "waste",
+                date: new Date(report.createdAt).toLocaleDateString('th-TH'),
+                originalData: report
+            });
+        });
+
+        // 3. Donations (Resources)
+        const myDonations = resources.filter(r => r.donorId === user.id);
+        myDonations.forEach(donation => {
+            jobs.push({
+                id: `donation-${donation.id}`,
+                title: `บริจาค: ${donation.name}`,
+                location: donation.location,
+                status: donation.status,
+                type: "donation",
+                date: new Date(donation.createdAt).toLocaleDateString('th-TH'),
+                originalData: donation
+            });
+        });
+
+        // 4. Needs
+        const myNeeds = needs.filter(n => n.requesterId === user.id);
+        myNeeds.forEach(need => {
+            jobs.push({
+                id: `need-${need.id}`,
+                title: `ขอความช่วยเหลือ: ${need.resourceType}`,
+                location: need.location,
+                status: need.status,
+                type: "need",
+                date: new Date(need.createdAt).toLocaleDateString('th-TH'),
+                originalData: need
+            });
+        });
+
+        // Sort by date desc
+        jobs.sort((a, b) => new Date(b.originalData.createdAt).getTime() - new Date(a.originalData.createdAt).getTime());
+
+        setAllJobs(jobs);
+    }, [user, repairJobs, wasteReports, resources, needs]);
+
+    const activeJobs = allJobs.filter((j) => !['completed', 'cancelled', 'cleared', 'distributed', 'fulfilled'].includes(j.status));
+    const completedJobs = allJobs.filter((j) => ['completed', 'cancelled', 'cleared', 'distributed', 'fulfilled'].includes(j.status));
+
+    if (!user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p>กรุณาเข้าสู่ระบบ...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background pb-28">
-
             <main className="max-w-lg mx-auto px-4 py-5">
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-xl bg-primary-light flex items-center justify-center">
