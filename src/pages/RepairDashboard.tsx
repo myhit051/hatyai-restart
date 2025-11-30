@@ -33,11 +33,29 @@ const RepairDashboard = () => {
   });
 
   useEffect(() => {
-    loadJobs();
-  }, [loadJobs]);
+    if (user) {
+      loadJobs(user.id);
+    } else {
+      loadJobs();
+    }
+  }, [loadJobs, user]);
 
   const handleCreateJob = async () => {
-    await createJob(newJob);
+    if (!user) {
+      alert("กรุณาเข้าสู่ระบบก่อนสร้างงานซ่อม");
+      return;
+    }
+
+    await createJob({
+      title: newJob.title,
+      description: newJob.description,
+      job_type: newJob.repairType as any,
+      location: newJob.location,
+      urgency: newJob.urgencyLevel,
+      requester_id: user.id,
+      requester_name: user.name,
+    });
+
     setNewJob({
       title: "",
       description: "",

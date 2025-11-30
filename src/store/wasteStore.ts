@@ -1,183 +1,131 @@
 import { create } from 'zustand';
+import {
+  getWasteReports,
+  createWasteReport,
+  updateWasteStatus,
+  type WasteReport as WasteReportDB,
+  type WasteReportData,
+  type WasteStatus,
+  type WasteType,
+  type SeverityLevel,
+} from '@/app/actions/waste';
 
-export type WasteType = 'construction' | 'hazardous' | 'electronic' | 'organic' | 'household' | 'other';
-export type WasteStatus = 'reported' | 'assigned' | 'in-collection' | 'collected' | 'disposed';
+export type { WasteType, WasteStatus } from '@/app/actions/waste';
 
 export interface WasteReport {
   id: string;
   reporterId: string;
-  reporterName: string;
-  location: string;
-  coordinates: { lat: number; lng: number };
+  reporterName?: string;
+  location: string | null;
+  coordinates: { lat: number; lng: number } | null;
   wasteType: WasteType;
-  estimatedVolume: string;
-  description: string;
-  images: string[];
-  urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
+  description: string | null;
+  imageUrl: string | null;
+  severity: SeverityLevel;
   status: WasteStatus;
-  assignedTo?: string;
-  collectionTeamName?: string;
-  accessibilityNotes?: string;
-  environmentalRisk: 'low' | 'medium' | 'high';
   createdAt: string;
   updatedAt: string;
-  estimatedDisposalMethod?: string;
-  specialInstructions?: string;
 }
 
 interface WasteState {
   wasteReports: WasteReport[];
   myReports: WasteReport[];
-  activeCollections: WasteReport[];
-  createReport: (reportData: Partial<WasteReport>) => Promise<void>;
-  assignCollection: (reportId: string, teamId: string) => Promise<void>;
-  updateCollectionStatus: (reportId: string, status: WasteStatus, notes?: string) => Promise<void>;
+  activeReports: WasteReport[];
+  isLoading: boolean;
+  createReport: (reportData: WasteReportData) => Promise<void>;
+  updateStatus: (reportId: string, status: WasteStatus) => Promise<void>;
   getWasteByLocation: (bounds: { north: number; south: number; east: number; west: number }) => WasteReport[];
   getHighRiskWaste: () => WasteReport[];
-  loadReports: () => void;
+  loadReports: (userId?: string) => Promise<void>;
 }
 
-// Mock data
-const mockWasteReports: WasteReport[] = [
-  {
-    id: '1',
-    reporterId: '5',
-    reporterName: 'นายประสิทธิ์ รักษ์สิ่งแวดล้อม',
-    location: 'ตลาดหาดใหญ่ ใกล้ปากทาง',
-    coordinates: { lat: 7.0128, lng: 100.4768 },
-    wasteType: 'hazardous',
-    estimatedVolume: '2-3 ตัน',
-    description: 'ขยะอันตรายจากน้ำท่วม เช่น สารเคมี แบตเตอรี่ ของใช้ไฟฟ้าเสีย',
-    images: [],
-    urgencyLevel: 'high',
-    status: 'reported',
-    accessibilityNotes: 'สามารถเข้าถึงได้ด้วยรถขนาดใหญ่ แต่ต้องระมัดระวังพื้นที่ลื่น',
-    environmentalRisk: 'high',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    estimatedDisposalMethod: 'กำจัดตามมาตรฐานขยะอันตราย',
-    specialInstructions: 'ต้องมีอุปกรณ์ป้องกันพิเศษ และทีมผู้เชี่ยวชาญ'
-  },
-  {
-    id: '2',
-    reporterId: '6',
-    reporterName: 'นางสาวมานี รักบ้านเกิด',
-    location: 'โรงพยาบาลหาดใหญ่ หลังอาคาร',
-    coordinates: { lat: 7.0145, lng: 100.4758 },
-    wasteType: 'household',
-    estimatedVolume: '1-2 ตัน',
-    description: 'ขยะชิ้นใหญ่จากบ้านเรือน เช่น เฟอร์นิเจอร์ เครื่องใช้ไฟฟ้าเสีย',
-    images: [],
-    urgencyLevel: 'medium',
-    status: 'assigned',
-    accessibilityNotes: 'ต้องใช้รถขนขนาดใหญ่ และมีพื้นที่จอดรถชั่วคราว',
-    environmentalRisk: 'low',
-    createdAt: new Date(Date.now() - 43200000).toISOString(),
-    updatedAt: new Date().toISOString(),
-    assignedTo: 'team-1',
-    collectionTeamName: 'ทีมกำจัดขยะเมืองหาดใหญ่',
-    estimatedDisposalMethod: 'คัดแยกและรีไซเคิล',
-    specialInstructions: 'มีของที่สามารถนำไปบริจาคได้บ้าง'
+const mapWasteReport = (report: WasteReportDB): WasteReport => {
+  let coordinates: { lat: number; lng: number } | null = null;
+  if (report.coordinates) {
+    try {
+      coordinates = JSON.parse(report.coordinates);
+    } catch (e) {
+      coordinates = null;
+    }
   }
-];
+
+  return {
+    id: report.id,
+    reporterId: report.reporter_id,
+    reporterName: report.reporter_name,
+    location: report.location,
+    coordinates,
+    wasteType: report.waste_type,
+    description: report.description,
+    imageUrl: report.image_url,
+    severity: report.severity,
+    status: report.status,
+    createdAt: report.created_at,
+    updatedAt: report.updated_at,
+  };
+};
 
 export const useWasteStore = create<WasteState>((set, get) => ({
-  wasteReports: mockWasteReports,
+  wasteReports: [],
   myReports: [],
-  activeCollections: [],
+  activeReports: [],
+  isLoading: false,
 
-  createReport: async (reportData: Partial<WasteReport>) => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const newReport: WasteReport = {
-      id: Date.now().toString(),
-      reporterId: currentUser.id || '1',
-      reporterName: currentUser.name || 'ไม่ระบุชื่อ',
-      location: reportData.location || '',
-      coordinates: reportData.coordinates || { lat: 0, lng: 0 },
-      wasteType: reportData.wasteType || 'other',
-      estimatedVolume: reportData.estimatedVolume || '',
-      description: reportData.description || '',
-      images: reportData.images || [],
-      urgencyLevel: reportData.urgencyLevel || 'medium',
-      status: 'reported',
-      accessibilityNotes: reportData.accessibilityNotes,
-      environmentalRisk: reportData.environmentalRisk || 'low',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      estimatedDisposalMethod: reportData.estimatedDisposalMethod,
-      specialInstructions: reportData.specialInstructions
-    };
+  loadReports: async (userId?: string) => {
+    set({ isLoading: true });
+    try {
+      const reportsData = await getWasteReports();
+      const reports = reportsData.map(mapWasteReport);
 
-    set(state => ({
-      wasteReports: [...state.wasteReports, newReport],
-      myReports: currentUser.id ? [...state.myReports, newReport] : state.myReports
-    }));
+      const userReports = userId
+        ? reports.filter(report => report.reporterId === userId)
+        : [];
+
+      const active = reports.filter(
+        report => report.status === 'reported' || report.status === 'acknowledged'
+      );
+
+      set({
+        wasteReports: reports,
+        myReports: userReports,
+        activeReports: active,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Error loading waste reports:', error);
+      set({ isLoading: false });
+    }
   },
 
-  assignCollection: async (reportId: string, teamId: string) => {
-    // Mock team name - ใน production จะดึงจาก database
-    const teamName = 'ทีมกำจัดขยะอาสาสมัคร';
-
-    set(state => ({
-      wasteReports: state.wasteReports.map(report =>
-        report.id === reportId
-          ? {
-              ...report,
-              status: 'assigned' as WasteStatus,
-              assignedTo: teamId,
-              collectionTeamName: teamName,
-              updatedAt: new Date().toISOString()
-            }
-          : report
-      )
-    }));
+  createReport: async (reportData: WasteReportData) => {
+    const result = await createWasteReport(reportData);
+    if (result.success) {
+      await get().loadReports(reportData.reporter_id);
+    }
   },
 
-  updateCollectionStatus: async (reportId: string, status: WasteStatus, notes?: string) => {
-    set(state => ({
-      wasteReports: state.wasteReports.map(report =>
-        report.id === reportId
-          ? {
-              ...report,
-              status,
-              specialInstructions: notes ? (report.specialInstructions || '') + '\n' + notes : report.specialInstructions,
-              updatedAt: new Date().toISOString()
-            }
-          : report
-      )
-    }));
+  updateStatus: async (reportId: string, status: WasteStatus) => {
+    const result = await updateWasteStatus(reportId, status);
+    if (result.success) {
+      await get().loadReports();
+    }
   },
 
   getWasteByLocation: (bounds) => {
-    return get().wasteReports.filter(report =>
-      report.coordinates.lat >= bounds.south &&
-      report.coordinates.lat <= bounds.north &&
-      report.coordinates.lng >= bounds.west &&
-      report.coordinates.lng <= bounds.east
-    );
+    return get().wasteReports.filter(report => {
+      if (!report.coordinates) return false;
+      return (
+        report.coordinates.lat >= bounds.south &&
+        report.coordinates.lat <= bounds.north &&
+        report.coordinates.lng >= bounds.west &&
+        report.coordinates.lng <= bounds.east
+      );
+    });
   },
 
   getHighRiskWaste: () => {
-    return get().wasteReports.filter(report =>
-      report.environmentalRisk === 'high' && report.status !== 'collected'
+    return get().wasteReports.filter(
+      report => report.severity === 'high' && report.status !== 'cleared'
     );
   },
-
-  loadReports: () => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const reports = get().wasteReports;
-
-    const userReports = reports.filter(report =>
-      report.reporterId === currentUser.id || report.assignedTo === 'team-1' // Mock team assignment
-    );
-
-    const activeCollections = reports.filter(report =>
-      report.status === 'assigned' || report.status === 'in-collection'
-    );
-
-    set({
-      myReports: userReports,
-      activeCollections: activeCollections
-    });
-  }
 }));

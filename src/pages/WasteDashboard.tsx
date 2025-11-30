@@ -21,7 +21,7 @@ import {
 
 const WasteDashboard = () => {
   const { user } = useAuthStore();
-  const { wasteReports, createReport, assignCollection, updateCollectionStatus, loadReports, myReports, activeCollections } = useWasteStore();
+  const { wasteReports, createReport, updateStatus, loadReports, myReports, activeReports } = useWasteStore();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newReport, setNewReport] = useState({
     location: "",
@@ -34,11 +34,28 @@ const WasteDashboard = () => {
   });
 
   useEffect(() => {
-    loadReports();
-  }, [loadReports]);
+    if (user) {
+      loadReports(user.id);
+    } else {
+      loadReports();
+    }
+  }, [loadReports, user]);
 
   const handleCreateReport = async () => {
-    await createReport(newReport);
+    if (!user) {
+      alert("กรุณาเข้าสู่ระบบก่อนรายงานขยะ");
+      return;
+    }
+
+    await createReport({
+      reporter_id: user.id,
+      reporter_name: user.name,
+      waste_type: newReport.wasteType,
+      description: newReport.description,
+      location: newReport.location,
+      severity: newReport.urgencyLevel as any,
+    });
+
     setNewReport({
       location: "",
       wasteType: "other",
@@ -52,7 +69,7 @@ const WasteDashboard = () => {
   };
 
   const handleAssignCollection = async (reportId: string) => {
-    await assignCollection(reportId, "team-1"); // Mock team ID
+    await updateStatus(reportId, "acknowledged");
   };
 
   const getStatusIcon = (status: string) => {
