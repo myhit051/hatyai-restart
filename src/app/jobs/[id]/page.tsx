@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -36,7 +37,7 @@ import {
 } from "@/app/actions/general-jobs";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { Map } from "@/components/Map";
+import Map from "@/components/Map";
 
 const URGENCY_COLORS = {
   low: "bg-green-100 text-green-800",
@@ -359,12 +360,19 @@ export default function JobDetailPage() {
               </CardHeader>
               <CardContent>
                 {job.coordinates && (
-                  <div className="mb-4">
+                  <div className="mb-4 h-64 w-full rounded-lg overflow-hidden">
                     <Map
                       center={JSON.parse(job.coordinates)}
                       zoom={15}
-                      markers={job.coordinates ? [JSON.parse(job.coordinates)] : []}
-                      className="h-64 w-full rounded-lg"
+                      items={[{
+                        id: job.id,
+                        type: 'job',
+                        title: job.title,
+                        description: job.description,
+                        status: job.status,
+                        location: job.location,
+                        coordinates: JSON.parse(job.coordinates)
+                      }]}
                     />
                   </div>
                 )}
