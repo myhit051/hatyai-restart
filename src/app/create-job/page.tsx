@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ import { toast } from "@/hooks/use-toast";
 import { getJobCategories, createGeneralJob, JobData, PostingType } from "@/app/actions/general-jobs";
 import { JobCategory } from "@/app/actions/general-jobs";
 import { CalendarIcon, MapPinIcon, DollarSignIcon, UserIcon } from "lucide-react";
+import { Suspense } from "react";
 
 const POSTING_TYPES = [
   { value: "hiring", label: "หาคนทำงาน", description: "มีงานและต้องการคนมาทำ" },
@@ -44,7 +46,7 @@ const URGENCY_LEVELS = [
   { value: "urgent", label: "ด่วนมาก", color: "bg-red-100 text-red-800" },
 ] as const;
 
-export default function CreateJobPage() {
+function CreateJobForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -451,5 +453,13 @@ export default function CreateJobPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function CreateJobPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateJobForm />
+    </Suspense>
   );
 }
