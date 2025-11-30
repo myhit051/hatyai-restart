@@ -105,7 +105,7 @@ const MyJobsPage = () => {
             jobs.push({
                 id: `repair-${job.id}`,
                 title: job.title,
-                location: job.location,
+                location: job.location || "ไม่ระบุตำแหน่ง",
                 status: job.status,
                 type: "help",
                 date: new Date(job.createdAt).toLocaleDateString('th-TH'),
@@ -118,7 +118,7 @@ const MyJobsPage = () => {
             jobs.push({
                 id: `waste-${report.id}`,
                 title: `แจ้งขยะ: ${report.wasteType}`,
-                location: report.location,
+                location: report.location || "ไม่ระบุตำแหน่ง",
                 status: report.status,
                 type: "waste",
                 date: new Date(report.createdAt).toLocaleDateString('th-TH'),
@@ -132,7 +132,7 @@ const MyJobsPage = () => {
             jobs.push({
                 id: `donation-${donation.id}`,
                 title: `บริจาค: ${donation.name}`,
-                location: donation.location,
+                location: donation.location || "ไม่ระบุตำแหน่ง",
                 status: donation.status,
                 type: "donation",
                 date: new Date(donation.createdAt).toLocaleDateString('th-TH'),
@@ -146,7 +146,7 @@ const MyJobsPage = () => {
             jobs.push({
                 id: `need-${need.id}`,
                 title: `ขอความช่วยเหลือ: ${need.resourceType}`,
-                location: need.location,
+                location: need.location || "ไม่ระบุตำแหน่ง",
                 status: need.status,
                 type: "need",
                 date: new Date(need.createdAt).toLocaleDateString('th-TH'),

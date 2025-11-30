@@ -35,9 +35,16 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border px-4 py-3">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">HY</span>
+          <div
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => router.push('/')}
+          >
+            <div className="w-8 h-8 rounded-lg overflow-hidden">
+              <img
+                src="https://res.cloudinary.com/dhoufeuyr/image/upload/w_64,h_64,c_fill,f_auto,q_auto/v1764490976/hytt_vru24n.png"
+                alt="Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <h1 className="text-lg font-semibold text-foreground">Hat Yai Restart</h1>
           </div>
