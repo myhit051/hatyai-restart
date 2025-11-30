@@ -177,7 +177,7 @@ function CreateJobForm() {
   const currentUrgency = URGENCY_LEVELS.find(level => level.value === urgency);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 pb-24 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">โพสต์หางานทั่วไป</h1>
         <p className="text-gray-600">เชื่อมต่อผู้ที่ต้องการจ้างงานและผู้ที่ต้องการหางานในพื้นที่หาดใหญ่</p>
