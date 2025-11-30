@@ -173,7 +173,7 @@ const MyJobsPage = () => {
 
     return (
         <div className="min-h-screen bg-background pb-28">
-            <main className="max-w-lg mx-auto px-4 py-5">
+            <main className="max-w-lg md:max-w-4xl mx-auto px-4 py-5">
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-xl bg-primary-light flex items-center justify-center">
                         <ClipboardList className="w-5 h-5 text-primary" />

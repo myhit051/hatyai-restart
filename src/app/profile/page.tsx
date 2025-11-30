@@ -64,7 +64,7 @@ const ProfilePage = () => {
     return (
         <div className="min-h-screen bg-background pb-28">
 
-            <main className="max-w-lg mx-auto px-4 py-5">
+            <main className="max-w-lg md:max-w-2xl mx-auto px-4 py-5">
                 {/* Profile Card */}
                 <Card className="p-5 rounded-2xl border border-border bg-card mb-5 animate-fade-in">
                     <div className="flex items-center gap-4 mb-4">

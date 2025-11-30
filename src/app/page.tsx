@@ -52,7 +52,7 @@ const IndexPage = () => {
 
     return (
         <div className="min-h-screen bg-background pb-28">
-            <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
+            <main className="max-w-lg md:max-w-4xl mx-auto px-4 py-5 space-y-6">
                 {/* Hero Status Section */}
                 <StatusCard
                     userName={user?.name || "ผู้เยี่ยมชม"}

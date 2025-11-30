@@ -126,7 +126,7 @@ const MapPage = () => {
 
     return (
         <div className="min-h-screen bg-background pb-28">
-            <main className="max-w-lg mx-auto">
+            <main className="max-w-lg md:max-w-6xl mx-auto">
                 {/* Map Placeholder */}
                 {/* Real Map */}
                 <div className="relative h-[400px] w-full overflow-hidden shadow-md">
