@@ -21,7 +21,7 @@ const Login = () => {
     const searchParams = useSearchParams();
 
     // Get the location they were trying to go to
-    const from = searchParams.get("from") || "/";
+    const from = searchParams?.get("from") || "/";
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
