@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import AuthInitializer from "@/components/AuthInitializer";
+import CookieConsent from "@/components/CookieConsent";
 
 export default function RootLayout({
     children,
@@ -34,6 +35,7 @@ export default function RootLayout({
                     <Header />
                     {children}
                     <BottomNav />
+                    <CookieConsent gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
                 </Providers>
             </body>
         </html>
