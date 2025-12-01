@@ -229,6 +229,22 @@ export class MockApiService {
       impactScore: 4.5
     };
   }
+
+  // Emergency Contacts
+  static async getEmergencyContacts() {
+    await this.delay(500);
+    return [
+      { name: "กู้ชีพ กู้ภัย", number: "1669", category: "emergency" },
+      { name: "กู้ภัยหาดใหญ่", number: "1163", category: "rescue" },
+      { name: "ศูนย์อุทกภัยหาดใหญ่", number: "1559", category: "flood" },
+      { name: "ศูนย์ดำรงธรรม", number: "1567", category: "government" },
+      { name: "ไฟฟ้าภูมิภาค", number: "1129", category: "utility" },
+      { name: "ประปาภูมิภาค", number: "1662", category: "utility" },
+      { name: "ศูนย์อุตุนิยมวิทยา", number: "1182", category: "weather" },
+      { name: "แจ้งเหตุด่วนเหตุร้าย", number: "191", category: "emergency" },
+      { name: "ดับเพลิง", number: "199", category: "emergency" }
+    ];
+  }
 }
 
 export default MockApiService;

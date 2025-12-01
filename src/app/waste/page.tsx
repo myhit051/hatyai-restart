@@ -20,6 +20,7 @@ import {
     TruckIcon,
     CheckCircleIcon
 } from "@heroicons/react/24/outline";
+import { UniversalDetailModal } from "@/components/UniversalDetailModal";
 
 const WasteDashboard = () => {
     const { user } = useAuthStore();
@@ -115,6 +116,14 @@ const WasteDashboard = () => {
         { value: "plastic", label: "พลาสติก" },
         { value: "mixed", label: "ขยะผสม/ทั่วไป" },
     ];
+
+    const [selectedReport, setSelectedReport] = useState<any>(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+    const handleViewDetails = (report: any) => {
+        setSelectedReport(report);
+        setIsDetailOpen(true);
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -253,120 +262,150 @@ const WasteDashboard = () => {
                 {/* Reports List */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Active Reports */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>จุดขยะที่รอการจัดการ</CardTitle>
-                            <CardDescription>รายงานที่ยังไม่ได้รับการแก้ไข</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {activeReports.length === 0 ? (
-                                <p className="text-center text-muted-foreground py-8">
-                                    ไม่มีจุดขยะตกค้างในขณะนี้
-                                </p>
-                            ) : (
-                                activeReports.map((report) => (
-                                    <div key={report.id} className="border rounded-lg p-4 space-y-2">
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold">จุดขยะที่รอการจัดการ</h2>
+                        {activeReports.length === 0 ? (
+                            <Card className="p-8 text-center text-muted-foreground">
+                                ไม่มีจุดขยะตกค้างในขณะนี้
+                            </Card>
+                        ) : (
+                            activeReports.map((report) => (
+                                <Card key={report.id} className="hover:shadow-md transition-shadow">
+                                    <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-medium">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Badge variant="destructive">แจ้งจุดขยะ</Badge>
+                                                    <Badge variant="outline">
                                                         {wasteTypeOptions.find(opt => opt.value === report.wasteType)?.label || report.wasteType}
-                                                    </h3>
-                                                    <Badge variant={getRiskBadgeVariant(report.severity)}>
-                                                        {report.severity === "high" && "ความเสี่ยงสูง"}
-                                                        {report.severity === "medium" && "ปานกลาง"}
-                                                        {report.severity === "low" && "ต่ำ"}
                                                     </Badge>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                                                <CardTitle className="text-lg mb-1 line-clamp-1">
                                                     {report.description}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    {getStatusIcon(report.status)}
-                                                    <span className="text-xs text-muted-foreground capitalize">
-                                                        {report.status.replace('_', ' ')}
-                                                    </span>
-                                                </div>
+                                                </CardTitle>
                                             </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <MapPinIcon className="h-4 w-4" />
+                                            <span className="line-clamp-1">{report.location}</span>
+                                        </div>
 
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                {getStatusIcon(report.status)}
+                                                <span className="capitalize">{report.status.replace('_', ' ')}</span>
+                                            </div>
+                                            <Badge variant={getRiskBadgeVariant(report.severity)}>
+                                                {report.severity === "high" && "ความเสี่ยงสูง"}
+                                                {report.severity === "medium" && "ปานกลาง"}
+                                                {report.severity === "low" && "ต่ำ"}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="flex gap-2 pt-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1"
+                                                onClick={() => handleViewDetails(report)}
+                                            >
+                                                ดูรายละเอียด
+                                            </Button>
                                             {user && (user.role === 'admin' || user.role === 'technician') && (
-                                                <div className="flex flex-col gap-2">
+                                                <>
                                                     {report.status === 'reported' && (
-                                                        <Button size="sm" onClick={() => handleUpdateStatus(report.id, 'acknowledged')}>
+                                                        <Button size="sm" onClick={() => handleUpdateStatus(report.id, 'acknowledged')} className="flex-1">
                                                             รับเรื่อง
                                                         </Button>
                                                     )}
                                                     {report.status === 'acknowledged' && (
-                                                        <Button size="sm" onClick={() => handleUpdateStatus(report.id, 'in_progress')}>
+                                                        <Button size="sm" onClick={() => handleUpdateStatus(report.id, 'in_progress')} className="flex-1">
                                                             เริ่มดำเนินการ
                                                         </Button>
                                                     )}
                                                     {report.status === 'in_progress' && (
-                                                        <Button size="sm" variant="outline" onClick={() => handleUpdateStatus(report.id, 'cleared')}>
+                                                        <Button size="sm" variant="outline" onClick={() => handleUpdateStatus(report.id, 'cleared')} className="flex-1">
                                                             เสร็จสิ้น
                                                         </Button>
                                                     )}
-                                                </div>
+                                                </>
                                             )}
                                         </div>
-
-                                        <div className="text-xs text-muted-foreground">
-                                            📍 {report.location} • 👤 {report.reporterName}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </CardContent>
-                    </Card>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        )}
+                    </div>
 
                     {/* My Reports */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>รายงานของฉัน</CardTitle>
-                            <CardDescription>ประวัติการแจ้งจุดขยะของคุณ</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {myReports.length === 0 ? (
-                                <p className="text-center text-muted-foreground py-8">
-                                    คุณยังไม่เคยแจ้งจุดขยะ
-                                </p>
-                            ) : (
-                                myReports.map((report) => (
-                                    <div key={report.id} className="border rounded-lg p-4 space-y-2">
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold">รายงานของฉัน</h2>
+                        {myReports.length === 0 ? (
+                            <Card className="p-8 text-center text-muted-foreground">
+                                คุณยังไม่เคยแจ้งจุดขยะ
+                            </Card>
+                        ) : (
+                            myReports.map((report) => (
+                                <Card key={report.id} className="hover:shadow-md transition-shadow">
+                                    <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-medium">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Badge variant="destructive">แจ้งจุดขยะ</Badge>
+                                                    <Badge variant="outline">
                                                         {wasteTypeOptions.find(opt => opt.value === report.wasteType)?.label || report.wasteType}
-                                                    </h3>
-                                                    <Badge variant={getRiskBadgeVariant(report.severity)}>
-                                                        {report.severity === "high" && "ความเสี่ยงสูง"}
-                                                        {report.severity === "medium" && "ปานกลาง"}
-                                                        {report.severity === "low" && "ต่ำ"}
                                                     </Badge>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                                                <CardTitle className="text-lg mb-1 line-clamp-1">
                                                     {report.description}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    {getStatusIcon(report.status)}
-                                                    <span className="text-xs text-muted-foreground capitalize">
-                                                        {report.status.replace('_', ' ')}
-                                                    </span>
-                                                </div>
+                                                </CardTitle>
                                             </div>
                                         </div>
-
-                                        <div className="text-xs text-muted-foreground">
-                                            📍 {report.location} • 📅 {new Date(report.createdAt).toLocaleDateString('th-TH')}
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <MapPinIcon className="h-4 w-4" />
+                                            <span className="line-clamp-1">{report.location}</span>
                                         </div>
-                                    </div>
-                                ))
-                            )}
-                        </CardContent>
-                    </Card>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                {getStatusIcon(report.status)}
+                                                <span className="capitalize">{report.status.replace('_', ' ')}</span>
+                                            </div>
+                                            <Badge variant={getRiskBadgeVariant(report.severity)}>
+                                                {report.severity === "high" && "ความเสี่ยงสูง"}
+                                                {report.severity === "medium" && "ปานกลาง"}
+                                                {report.severity === "low" && "ต่ำ"}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="pt-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full"
+                                                onClick={() => handleViewDetails(report)}
+                                            >
+                                                ดูรายละเอียด
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
+
+            <UniversalDetailModal
+                isOpen={isDetailOpen}
+                onClose={() => setIsDetailOpen(false)}
+                type="waste"
+                data={selectedReport}
+            />
         </div>
     );
 };

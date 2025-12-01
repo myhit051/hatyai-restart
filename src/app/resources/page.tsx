@@ -11,10 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ResourceType, ResourceStatus, ResourceNeed } from "@/store/resourceStore";
-import { HeartIcon, PlusIcon, CubeIcon, UsersIcon, CheckCircleIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { HeartIcon, PlusIcon, CubeIcon, UsersIcon, CheckCircleIcon, ArrowRightIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import ImageUpload from "@/components/ui/image-upload";
 import LocationPicker from "@/components/LocationPicker";
 import ClientOnly from "@/components/ClientOnly";
+import { UniversalDetailModal } from "@/components/UniversalDetailModal";
 
 const ResourceDashboard = () => {
     const { user } = useAuthStore();
@@ -166,6 +167,16 @@ const ResourceDashboard = () => {
         { value: "construction", label: "วัสดุก่อสร้าง" },
         { value: "other", label: "อื่นๆ" }
     ];
+
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [detailType, setDetailType] = useState<'resource' | 'need'>('resource');
+
+    const handleViewDetails = (item: any, type: 'resource' | 'need') => {
+        setSelectedItem(item);
+        setDetailType(type);
+        setIsDetailOpen(true);
+    };
 
     return (
         <ClientOnly>
@@ -481,129 +492,134 @@ const ResourceDashboard = () => {
                     {/* Resource Listings */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Available Resources */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>ทรัพยากรที่สามารถบริจาคได้</CardTitle>
-                                <CardDescription>ทรัพยากรที่พร้อมสำหรับการกระจาย</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {availableResources.length === 0 ? (
-                                    <p className="text-center text-muted-foreground py-8">
-                                        ไม่มีทรัพยากรที่ว่างในขณะนี้
-                                    </p>
-                                ) : (
-                                    availableResources.map((resource) => {
-                                        const matchedNeeds = needs.filter(
-                                            need => need.resourceType === resource.type && need.status === "pending"
-                                        );
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold">ทรัพยากรที่สามารถบริจาคได้</h2>
+                            {availableResources.length === 0 ? (
+                                <Card className="p-8 text-center text-muted-foreground">
+                                    ไม่มีทรัพยากรที่ว่างในขณะนี้
+                                </Card>
+                            ) : (
+                                availableResources.map((resource) => {
+                                    const matchedNeeds = needs.filter(
+                                        need => need.resourceType === resource.type && need.status === "pending"
+                                    );
 
-                                        return (
-                                            <div key={resource.id} className="border rounded-lg p-4 space-y-2">
+                                    return (
+                                        <Card key={resource.id} className="hover:shadow-md transition-shadow">
+                                            <CardHeader className="pb-3">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                        <h3 className="font-medium">{resource.name}</h3>
-                                                        <p className="text-sm text-muted-foreground line-clamp-2">
-                                                            {resource.description}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            {getStatusIcon(resource.status)}
-                                                            <Badge variant={getPriorityBadgeVariant(resource.priority)}>
-                                                                {resource.priority === "critical" && "ด่วนที่สุด"}
-                                                                {resource.priority === "high" && "สูง"}
-                                                                {resource.priority === "medium" && "ปานกลาง"}
-                                                                {resource.priority === "low" && "ต่ำ"}
-                                                            </Badge>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <Badge className="bg-green-100 text-green-800">บริจาค</Badge>
+                                                            <Badge variant="outline">{resource.type}</Badge>
                                                         </div>
-                                                    </div>
-
-                                                    <div className="flex flex-col gap-2">
-                                                        {matchedNeeds.length > 0 && user?.role === 'admin' && (
-                                                            <Select onValueChange={(needId) => handleMatchResource(resource.id, needId)}>
-                                                                <SelectTrigger className="w-32">
-                                                                    <SelectValue placeholder="จับคู่" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {matchedNeeds.map((need) => (
-                                                                        <SelectItem key={need.id} value={need.id}>
-                                                                            {need.requesterName}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        )}
-
-                                                        {user && user.id !== resource.donorId && resource.status === 'available' && (
-                                                            <Button size="sm" onClick={() => updateResourceStatus(resource.id, 'assigned')}>
-                                                                ขอรับบริจาค
-                                                            </Button>
-                                                        )}
+                                                        <CardTitle className="text-lg mb-1 line-clamp-1">
+                                                            {resource.name}
+                                                        </CardTitle>
                                                     </div>
                                                 </div>
-
-                                                <div className="text-xs text-muted-foreground">
-                                                    📍 {resource.location} • 👤 {resource.donorName}
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <MapPinIcon className="h-4 w-4" />
+                                                    <span className="line-clamp-1">{resource.location}</span>
                                                 </div>
 
-                                                <div className="text-xs text-muted-foreground">
-                                                    📦 {resource.quantity} {resource.unit}
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Pending Needs */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>คำขอความช่วยเหลือที่รอดำเนินการ</CardTitle>
-                                <CardDescription>คำขอที่ต้องการการจับคู่ทรัพยากร</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {pendingNeeds.length === 0 ? (
-                                    <p className="text-center text-muted-foreground py-8">
-                                        ไม่มีคำขอที่รอดำเนินการในขณะนี้
-                                    </p>
-                                ) : (
-                                    pendingNeeds.map((need) => {
-                                        const matchingResources = findMatches(need.id);
-
-                                        return (
-                                            <div key={need.id} className="border rounded-lg p-4 space-y-2">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <h3 className="font-medium">
-                                                            {resourceTypeOptions.find(opt => opt.value === need.resourceType)?.label}
-                                                        </h3>
-                                                        <p className="text-sm text-muted-foreground line-clamp-2">
-                                                            {need.description}
-                                                        </p>
-                                                        <Badge variant={getPriorityBadgeVariant(need.urgency)} className="mt-2">
-                                                            {need.urgency === "critical" && "ด่วนที่สุด"}
-                                                            {need.urgency === "high" && "สูง"}
-                                                            {need.urgency === "medium" && "ปานกลาง"}
-                                                            {need.urgency === "low" && "ต่ำ"}
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                        {getStatusIcon(resource.status)}
+                                                        <Badge variant={getPriorityBadgeVariant(resource.priority)}>
+                                                            {resource.priority === "critical" && "ด่วนที่สุด"}
+                                                            {resource.priority === "high" && "สูง"}
+                                                            {resource.priority === "medium" && "ปานกลาง"}
+                                                            {resource.priority === "low" && "ต่ำ"}
                                                         </Badge>
                                                     </div>
+                                                    <div className="text-sm font-medium">
+                                                        {resource.quantity} {resource.unit}
+                                                    </div>
+                                                </div>
 
-                                                    {user && user.id === need.requesterId && need.status === 'pending' && (
-                                                        <Button size="sm" variant="outline" onClick={() => updateNeedStatus(need.id, 'fulfilled')}>
-                                                            ได้รับแล้ว
+                                                <div className="flex gap-2 pt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="flex-1"
+                                                        onClick={() => handleViewDetails(resource, 'resource')}
+                                                    >
+                                                        ดูรายละเอียด
+                                                    </Button>
+                                                    {matchedNeeds.length > 0 && user?.role === 'admin' && (
+                                                        <Select onValueChange={(needId) => handleMatchResource(resource.id, needId)}>
+                                                            <SelectTrigger className="w-32 h-9">
+                                                                <SelectValue placeholder="จับคู่" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {matchedNeeds.map((need) => (
+                                                                    <SelectItem key={need.id} value={need.id}>
+                                                                        {need.requesterName}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
+                                                    {user && user.id !== resource.donorId && resource.status === 'available' && (
+                                                        <Button size="sm" onClick={() => updateResourceStatus(resource.id, 'assigned')} className="flex-1">
+                                                            ขอรับบริจาค
                                                         </Button>
                                                     )}
                                                 </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })
+                            )}
+                        </div>
 
-                                                <div className="text-xs text-muted-foreground">
-                                                    📍 {need.location} • 👤 {need.requesterName}
+                        {/* Pending Needs */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold">คำขอความช่วยเหลือที่รอดำเนินการ</h2>
+                            {pendingNeeds.length === 0 ? (
+                                <Card className="p-8 text-center text-muted-foreground">
+                                    ไม่มีคำขอที่รอดำเนินการในขณะนี้
+                                </Card>
+                            ) : (
+                                pendingNeeds.map((need) => {
+                                    const matchingResources = findMatches(need.id);
+
+                                    return (
+                                        <Card key={need.id} className="hover:shadow-md transition-shadow">
+                                            <CardHeader className="pb-3">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <Badge className="bg-yellow-100 text-yellow-800">ต้องการ</Badge>
+                                                            <Badge variant="outline">
+                                                                {resourceTypeOptions.find(opt => opt.value === need.resourceType)?.label}
+                                                            </Badge>
+                                                        </div>
+                                                        <CardTitle className="text-lg mb-1 line-clamp-1">
+                                                            {need.description}
+                                                        </CardTitle>
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <MapPinIcon className="h-4 w-4" />
+                                                    <span className="line-clamp-1">{need.location}</span>
                                                 </div>
 
-                                                <div className="text-xs text-muted-foreground">
-                                                    📦 ต้องการ: {need.requiredQuantity} {need.unit}
-                                                </div>
-
-                                                <div className="text-xs text-muted-foreground">
-                                                    👥 ผู้ได้รับประโยชน์: {need.beneficiaryCount} คน
+                                                <div className="flex items-center justify-between">
+                                                    <Badge variant={getPriorityBadgeVariant(need.urgency)}>
+                                                        {need.urgency === "critical" && "ด่วนที่สุด"}
+                                                        {need.urgency === "high" && "สูง"}
+                                                        {need.urgency === "medium" && "ปานกลาง"}
+                                                        {need.urgency === "low" && "ต่ำ"}
+                                                    </Badge>
+                                                    <div className="text-sm font-medium">
+                                                        ต้องการ: {need.requiredQuantity} {need.unit}
+                                                    </div>
                                                 </div>
 
                                                 {matchingResources.length > 0 && (
@@ -611,14 +627,37 @@ const ResourceDashboard = () => {
                                                         ✅ มีทรัพยากรที่เหมาะสม {matchingResources.length} รายการ
                                                     </div>
                                                 )}
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </CardContent>
-                        </Card>
+
+                                                <div className="flex gap-2 pt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="flex-1"
+                                                        onClick={() => handleViewDetails(need, 'need')}
+                                                    >
+                                                        ดูรายละเอียด
+                                                    </Button>
+                                                    {user && user.id === need.requesterId && need.status === 'pending' && (
+                                                        <Button size="sm" variant="outline" onClick={() => updateNeedStatus(need.id, 'fulfilled')} className="flex-1">
+                                                            ได้รับแล้ว
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                <UniversalDetailModal
+                    isOpen={isDetailOpen}
+                    onClose={() => setIsDetailOpen(false)}
+                    type={detailType}
+                    data={selectedItem}
+                />
             </div>
         </ClientOnly>
     );

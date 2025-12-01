@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPinIcon, GlobeAsiaAustraliaIcon } from "@heroicons/react/24/outline";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import MapPickerWrapper from "./MapPickerWrapper";
 
 interface LocationPickerProps {
@@ -64,6 +64,9 @@ const LocationPicker = ({ value, onChange, addressValue, onAddressChange }: Loca
                     <DialogContent className="max-w-3xl h-[80vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>เลือกตำแหน่งบนแผนที่</DialogTitle>
+                            <DialogDescription>
+                                คลิกบนแผนที่เพื่อเลือกตำแหน่งที่ต้องการ
+                            </DialogDescription>
                         </DialogHeader>
                         <div className="flex-1 min-h-0 relative border rounded-md overflow-hidden">
                             <MapPickerWrapper

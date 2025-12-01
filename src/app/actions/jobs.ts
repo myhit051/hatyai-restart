@@ -150,3 +150,18 @@ export async function updateJobStatus(
         return { success: false, error: "Failed to update job status" };
     }
 }
+export async function deleteJob(jobId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await turso.execute({
+            sql: "DELETE FROM jobs WHERE id = ?",
+            args: [jobId],
+        });
+
+        revalidatePath("/repair");
+        revalidatePath("/jobs");
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting job:", error);
+        return { success: false, error: "Failed to delete job" };
+    }
+}

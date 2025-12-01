@@ -209,15 +209,22 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
         clusterGroup.addLayers(markers);
 
         // Auto-fit bounds if there are markers to show all locations (including outside province)
+        // Auto-fit bounds if there are markers to show all locations (including outside province)
         if (markers.length > 0) {
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 if (mapInstanceRef.current && markerClusterGroupRef.current) {
                     const bounds = markerClusterGroupRef.current.getBounds();
                     if (bounds.isValid()) {
-                        mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                        mapInstanceRef.current.fitBounds(bounds, {
+                            padding: [50, 50],
+                            maxZoom: 15,
+                            animate: true
+                        });
                     }
                 }
-            }, 100);
+            }, 300);
+
+            return () => clearTimeout(timer);
         }
     }, [items, center]);
 

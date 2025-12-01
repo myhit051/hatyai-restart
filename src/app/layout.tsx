@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-    title: "Hat Yai Restart",
-    description: "แพลตฟอร์มฟื้นฟูเมืองหาดใหญ่ - แจ้งซ่อม, รายงานขยะ, และบริจาคทรัพยากร",
+    title: "Hatyai Connect",
+    description: "แพลตฟอร์ม Hatyai Connect ขับเคลื่อนโครงการ Hat Yai Restart - แจ้งซ่อม, รายงานขยะ, และบริจาคทรัพยากร",
     icons: {
         icon: [
             { url: "https://res.cloudinary.com/dhoufeuyr/image/upload/w_32,h_32,c_fill,f_auto,q_auto/v1764490976/hytt_vru24n.png", sizes: "32x32", type: "image/png" },

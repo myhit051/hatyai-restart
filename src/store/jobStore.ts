@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getJobs, createJob, assignJob, updateJobStatus, type Job, type JobData, type JobStatus } from '@/app/actions/jobs';
+import { getJobs, createJob, assignJob, updateJobStatus, deleteJob, type Job, type JobData, type JobStatus } from '@/app/actions/jobs';
 
 export type { JobStatus } from '@/app/actions/jobs';
 export type UrgencyLevel = 'low' | 'medium' | 'high' | 'critical';
@@ -31,6 +31,7 @@ interface JobState {
   createJob: (jobData: JobData) => Promise<{ success: boolean; error?: string }>;
   assignJob: (jobId: string, technicianId: string) => Promise<void>;
   updateJobStatus: (jobId: string, status: JobStatus) => Promise<void>;
+  deleteJob: (jobId: string) => Promise<{ success: boolean; error?: string }>;
   getJobsByLocation: (location: string) => RepairJob[];
   getJobsByTechnician: (technicianId: string) => RepairJob[];
   loadJobs: (userId?: string) => Promise<void>;
@@ -126,6 +127,20 @@ export const useJobStore = create<JobState>((set, get) => ({
     if (result.success) {
       await get().loadJobs();
     }
+  },
+
+  deleteJob: async (jobId: string) => {
+    const result = await deleteJob(jobId);
+    if (result.success) {
+      // Optimistically update the state
+      const { jobs, myJobs, availableJobs } = get();
+      set({
+        jobs: jobs.filter(j => j.id !== jobId),
+        myJobs: myJobs.filter(j => j.id !== jobId),
+        availableJobs: availableJobs.filter(j => j.id !== jobId),
+      });
+    }
+    return result;
   },
 
   getJobsByLocation: (location: string) => {

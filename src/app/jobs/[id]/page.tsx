@@ -189,7 +189,7 @@ export default function JobDetailPage() {
       return wageType === "negotiable" ? "ตกลงกันได้" : "ไม่ระบุ";
     }
 
-    const wageText = `${wageAmount.toLocaleString()} THB`;
+    const wageText = `${wageAmount.toLocaleString()} บาท`;
     const unitMap = {
       daily: "/วัน",
       hourly: "/ชั่วโมง",

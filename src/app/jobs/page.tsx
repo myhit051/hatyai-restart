@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   MapPinIcon,
   DollarSignIcon,
-  ClockIcon,
   UserIcon,
   SearchIcon,
   Filter,
@@ -24,26 +23,25 @@ import {
   getJobCategories,
   GeneralJob,
   JobCategory,
-  PostingType,
-  JobType,
-  UrgencyLevel
 } from "@/app/actions/general-jobs";
 import {
   getJobs,
   Job
 } from "@/app/actions/jobs";
-import Link from "next/link";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { UniversalDetailModal } from "@/components/UniversalDetailModal";
 
 const POSTING_TYPES = [
   { value: "all", label: "ทั้งหมด" },
   { value: "hiring", label: "หาคนทำงาน" },
   { value: "seeking", label: "หางานทำ" },
-] as const;
-
-const JOB_TYPES = [
-  { value: "all", label: "ทุกประเภท" },
-  { value: "repair", label: "งานซ่อม/ล้าง/ขนย้าย" },
-  { value: "general", label: "งานทั่วไป" },
 ] as const;
 
 const URGENCY_COLORS = {
@@ -62,17 +60,16 @@ interface JobCardProps {
   job: GeneralJob;
   showContact?: boolean;
   onShowContact?: () => void;
+  onViewDetails: (job: GeneralJob) => void;
 }
 
-function GeneralJobCard({ job, showContact, onShowContact }: JobCardProps) {
-  const router = useRouter();
-
+function GeneralJobCard({ job, showContact, onShowContact, onViewDetails }: JobCardProps) {
   const formatWage = () => {
     if (!job.wage_amount || job.wage_type === "negotiable") {
       return job.wage_type === "negotiable" ? "ตกลงกันได้" : "ไม่ระบุ";
     }
 
-    const wageText = `${job.wage_amount.toLocaleString()} ${job.wage_currency}`;
+    const wageText = `${job.wage_amount.toLocaleString()} บาท`;
     const unitMap = {
       daily: "/วัน",
       hourly: "/ชั่วโมง",
@@ -146,7 +143,7 @@ function GeneralJobCard({ job, showContact, onShowContact }: JobCardProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/jobs/${job.id}`)}
+            onClick={() => onViewDetails(job)}
             className="flex-1"
           >
             ดูรายละเอียด
@@ -170,11 +167,10 @@ function GeneralJobCard({ job, showContact, onShowContact }: JobCardProps) {
 interface RepairJobCardProps {
   job: Job;
   onAssign?: () => void;
+  onViewDetails: (job: Job) => void;
 }
 
-function RepairJobCard({ job, onAssign }: RepairJobCardProps) {
-  const router = useRouter();
-
+function RepairJobCard({ job, onAssign, onViewDetails }: RepairJobCardProps) {
   const getJobTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       electric: "ไฟฟ้า",
@@ -232,7 +228,7 @@ function RepairJobCard({ job, onAssign }: RepairJobCardProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/repair/${job.id}`)}
+            onClick={() => onViewDetails(job)}
             className="flex-1"
           >
             ดูรายละเอียด
@@ -253,14 +249,6 @@ function RepairJobCard({ job, onAssign }: RepairJobCardProps) {
   );
 }
 
-import { Suspense } from "react";
-
-// ... (imports)
-
-// ... (constants)
-
-// ... (interfaces and helper components)
-
 function JobsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -270,12 +258,15 @@ function JobsContent() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
 
+  // Dialog State
+  const [selectedJob, setSelectedJob] = useState<GeneralJob | Job | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   // Filters
   const [searchQuery, setSearchQuery] = useState(searchParams?.get('search') || '');
   const [postingTypeFilter, setPostingTypeFilter] = useState("all");
-  const [jobTypeFilter, setJobTypeFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("");
   const [urgencyFilter, setUrgencyFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   useEffect(() => {
     loadData();
@@ -338,6 +329,11 @@ function JobsContent() {
     // Here we would implement the contact logic
     // For now, just show a success message
     alert("ข้อมูลติดต่อจะถูกแสดงหลังจากยืนยันตัวตน");
+  };
+
+  const handleViewDetails = (job: GeneralJob | Job) => {
+    setSelectedJob(job);
+    setIsDialogOpen(true);
   };
 
   const updateUrl = (newParams: Record<string, string>) => {
@@ -405,9 +401,9 @@ function JobsContent() {
 
       {/* Search and Filters */}
       <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-2">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -419,31 +415,95 @@ function JobsContent() {
               </div>
             </div>
 
-            <Select value={postingTypeFilter} onValueChange={setPostingTypeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="ประเภทการโพสต์" />
-              </SelectTrigger>
-              <SelectContent>
-                {POSTING_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Mobile Filter Button */}
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="w-full gap-2">
+                    <Filter className="h-4 w-4" />
+                    ตัวกรอง
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80vh]">
+                  <SheetHeader>
+                    <SheetTitle>ตัวกรองค้นหา</SheetTitle>
+                    <SheetDescription>
+                      เลือกเงื่อนไขเพื่อค้นหางานที่ต้องการ
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="py-6 space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">ประเภทการโพสต์</label>
+                      <Select value={postingTypeFilter} onValueChange={setPostingTypeFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="ประเภทการโพสต์" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {POSTING_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-            <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="ความเร่งด่วน" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">ทุกระดับ</SelectItem>
-                <SelectItem value="low">ไม่ด่วน</SelectItem>
-                <SelectItem value="medium">ปานกลาง</SelectItem>
-                <SelectItem value="high">ด่วน</SelectItem>
-                <SelectItem value="urgent">ด่วนมาก</SelectItem>
-              </SelectContent>
-            </Select>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">ความเร่งด่วน</label>
+                      <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="ความเร่งด่วน" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">ทุกระดับ</SelectItem>
+                          <SelectItem value="low">ไม่ด่วน</SelectItem>
+                          <SelectItem value="medium">ปานกลาง</SelectItem>
+                          <SelectItem value="high">ด่วน</SelectItem>
+                          <SelectItem value="urgent">ด่วนมาก</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button className="w-full" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Escape' }))}>
+                      ดูผลลัพธ์
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Desktop Filters */}
+            <div className="hidden md:flex gap-4">
+              <div className="w-[180px]">
+                <Select value={postingTypeFilter} onValueChange={setPostingTypeFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="ประเภทการโพสต์" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {POSTING_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-[180px]">
+                <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="ความเร่งด่วน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">ทุกระดับ</SelectItem>
+                    <SelectItem value="low">ไม่ด่วน</SelectItem>
+                    <SelectItem value="medium">ปานกลาง</SelectItem>
+                    <SelectItem value="high">ด่วน</SelectItem>
+                    <SelectItem value="urgent">ด่วนมาก</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -474,6 +534,7 @@ function JobsContent() {
                       job={job}
                       showContact={true}
                       onShowContact={() => handleShowContact(job.id)}
+                      onViewDetails={handleViewDetails}
                     />
                   ))}
                 </div>
@@ -488,6 +549,7 @@ function JobsContent() {
                     <RepairJobCard
                       key={job.id}
                       job={job}
+                      onViewDetails={handleViewDetails}
                     />
                   ))}
                 </div>
@@ -505,6 +567,7 @@ function JobsContent() {
                   job={job}
                   showContact={true}
                   onShowContact={() => handleShowContact(job.id)}
+                  onViewDetails={handleViewDetails}
                 />
               ))}
             </div>
@@ -522,6 +585,7 @@ function JobsContent() {
                 <RepairJobCard
                   key={job.id}
                   job={job}
+                  onViewDetails={handleViewDetails}
                 />
               ))}
             </div>
@@ -532,6 +596,13 @@ function JobsContent() {
           )}
         </TabsContent>
       </Tabs>
+
+      <UniversalDetailModal
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        type="job"
+        data={selectedJob}
+      />
     </div>
   );
 }

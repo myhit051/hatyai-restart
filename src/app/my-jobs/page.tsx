@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ClipboardList, MapPin, Clock, ChevronRight } from "lucide-react";
+import { ClipboardList, MapPin, Clock, ChevronRight, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
@@ -50,7 +51,7 @@ const typeConfig = {
     need: { label: "ขอความช่วยเหลือ", color: "text-orange-500" },
 };
 
-const JobCard = ({ job }: { job: JobItem }) => {
+const JobCard = ({ job, onDelete }: { job: JobItem; onDelete: (job: JobItem) => void }) => {
     const status = statusConfig[job.status] || { label: job.status, className: "bg-gray-100 text-gray-500" };
     const type = typeConfig[job.type];
 
@@ -61,7 +62,20 @@ const JobCard = ({ job }: { job: JobItem }) => {
                     <p className={cn("text-xs font-medium mb-1", type.color)}>{type.label}</p>
                     <h3 className="font-medium text-foreground">{job.title}</h3>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-center gap-1">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(job);
+                        }}
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                </div>
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
@@ -82,7 +96,7 @@ const JobCard = ({ job }: { job: JobItem }) => {
 
 const MyJobsPage = () => {
     const { user } = useAuthStore();
-    const { myJobs: repairJobs, loadJobs } = useJobStore();
+    const { myJobs: repairJobs, loadJobs, deleteJob } = useJobStore();
     const { myReports: wasteReports, loadReports } = useWasteStore();
     const { resources, needs, loadData: loadResourceData } = useResourceStore();
     const [allJobs, setAllJobs] = useState<JobItem[]>([]);
@@ -160,6 +174,21 @@ const MyJobsPage = () => {
         setAllJobs(jobs);
     }, [user, repairJobs, wasteReports, resources, needs]);
 
+    const handleDelete = async (job: JobItem) => {
+        if (!confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
+
+        if (job.type === 'help') {
+            const result = await deleteJob(job.originalData.id);
+            if (result.success) {
+                // State will be updated by useJobStore and then the useEffect will re-run
+            } else {
+                alert("ลบไม่สำเร็จ: " + result.error);
+            }
+        } else {
+            alert("ขณะนี้รองรับการลบเฉพาะงานซ่อม/งานทั่วไปเท่านั้น");
+        }
+    };
+
     const activeJobs = allJobs.filter((j) => !['completed', 'cancelled', 'cleared', 'distributed', 'fulfilled'].includes(j.status));
     const completedJobs = allJobs.filter((j) => ['completed', 'cancelled', 'cleared', 'distributed', 'fulfilled'].includes(j.status));
 
@@ -196,7 +225,7 @@ const MyJobsPage = () => {
 
                     <TabsContent value="active" className="space-y-3 animate-fade-in">
                         {activeJobs.length > 0 ? (
-                            activeJobs.map((job) => <JobCard key={job.id} job={job} />)
+                            activeJobs.map((job) => <JobCard key={job.id} job={job} onDelete={handleDelete} />)
                         ) : (
                             <div className="text-center py-10 text-muted-foreground">
                                 <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -207,7 +236,7 @@ const MyJobsPage = () => {
 
                     <TabsContent value="completed" className="space-y-3 animate-fade-in">
                         {completedJobs.length > 0 ? (
-                            completedJobs.map((job) => <JobCard key={job.id} job={job} />)
+                            completedJobs.map((job) => <JobCard key={job.id} job={job} onDelete={handleDelete} />)
                         ) : (
                             <div className="text-center py-10 text-muted-foreground">
                                 <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />

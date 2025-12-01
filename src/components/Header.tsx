@@ -52,7 +52,7 @@ const Header = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <h1 className="text-lg font-semibold text-foreground">Hat Yai Restart</h1>
+            <h1 className="text-lg font-semibold text-foreground">Hatyai Connect</h1>
           </div>
 
           {/* Desktop Navigation */}

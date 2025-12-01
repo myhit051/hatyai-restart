@@ -134,8 +134,13 @@
     @apply border-border;
   }
 
+  html,
   body {
-    @apply bg-background text-foreground font-kanit antialiased overflow-x-hidden;
+    @apply overflow-x-hidden w-full;
+  }
+
+  body {
+    @apply bg-background text-foreground font-kanit antialiased;
   }
 
   html {

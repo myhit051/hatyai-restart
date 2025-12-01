@@ -2,6 +2,7 @@
 
 import { turso } from "@/lib/turso";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
 
 export type JobStatus = "open" | "in_progress" | "completed" | "cancelled";
 export type JobType = "repair" | "general";
@@ -300,16 +301,28 @@ export async function getGeneralJobById(id: string): Promise<GeneralJob | null> 
 
 export async function createGeneralJob(data: JobData): Promise<{ success: boolean; error?: string; id?: string }> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "กรุณาเข้าสู่ระบบก่อนโพสต์งาน" };
+    }
+
     const id = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const imagesJson = data.images && data.images.length > 0 ? JSON.stringify(data.images) : null;
     const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
     const skillsJson = data.skills_required && data.skills_required.length > 0 ? JSON.stringify(data.skills_required) : null;
 
+    // Determine employer_id and seeker_id based on posting_type
+    const employer_id = data.posting_type === 'hiring' ? user.id : null;
+    const seeker_id = data.posting_type === 'seeking' ? user.id : null;
+    const requester_id = user.id; // Always set requester_id to current user to satisfy NOT NULL constraint
+
     await turso.execute({
       sql: `
         INSERT INTO jobs (
           id, title, description, job_type, category_id, subcategory,
-          posting_type, employer_id, seeker_id, contact_person, contact_phone,
+          posting_type, employer_id, seeker_id, requester_id, contact_person, contact_phone,
           contact_email, location, coordinates, work_location_type, wage_type,
           wage_amount, wage_currency, work_duration, skills_required,
           requirements, status, urgency, images, expires_at
@@ -323,8 +336,9 @@ export async function createGeneralJob(data: JobData): Promise<{ success: boolea
         data.category_id || null,
         data.subcategory || null,
         data.posting_type,
-        data.employer_id || null,
-        data.seeker_id || null,
+        employer_id,
+        seeker_id,
+        requester_id,
         data.contact_person || null,
         data.contact_phone || null,
         data.contact_email || null,

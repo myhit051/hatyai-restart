@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useJobStore } from "@/store/jobStore";
 import { useWasteStore } from "@/store/wasteStore";
 import { useResourceStore } from "@/store/resourceStore";
+import { UniversalDetailModal } from "@/components/UniversalDetailModal";
 
 const IndexPage = () => {
     const { user } = useAuthStore();
@@ -14,6 +15,26 @@ const IndexPage = () => {
     const { myReports, wasteReports, loadReports } = useWasteStore();
     const { resources, needs, loadData } = useResourceStore();
     const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [detailType, setDetailType] = useState<any>('job');
+
+    const handleActivityClick = (activity: ActivityItem) => {
+        let item = null;
+        if (activity.type === 'job') {
+            item = jobs.find(j => j.id === activity.originalId);
+        } else if (activity.type === 'waste') {
+            item = wasteReports.find(w => w.id === activity.originalId);
+        } else if (activity.type === 'need') {
+            item = needs.find(n => n.id === activity.originalId);
+        }
+
+        if (item) {
+            setSelectedItem(item);
+            setDetailType(activity.type);
+            setIsDetailOpen(true);
+        }
+    };
 
     useEffect(() => {
         loadJobs();
@@ -40,7 +61,9 @@ const IndexPage = () => {
                 minute: '2-digit',
                 day: 'numeric',
                 month: 'short'
-            })
+            }),
+            type: item.type,
+            originalId: item.id
         }));
 
         setRecentActivities(mappedActivities);
@@ -51,7 +74,7 @@ const IndexPage = () => {
     const myDonationsCount = resources.filter(r => r.donorId === user?.id).length;
 
     return (
-        <div className="min-h-screen bg-background pb-28">
+        <div className="min-h-screen bg-background pb-28 w-full overflow-x-hidden">
             <main className="max-w-lg md:max-w-4xl mx-auto px-4 py-5 space-y-6">
                 {/* Hero Status Section */}
                 <StatusCard
@@ -69,8 +92,15 @@ const IndexPage = () => {
                 </section>
 
                 {/* Recent Activity */}
-                <RecentActivity activities={recentActivities} />
+                <RecentActivity activities={recentActivities} onItemClick={handleActivityClick} />
             </main>
+
+            <UniversalDetailModal
+                isOpen={isDetailOpen}
+                onClose={() => setIsDetailOpen(false)}
+                type={detailType}
+                data={selectedItem}
+            />
         </div>
     );
 };

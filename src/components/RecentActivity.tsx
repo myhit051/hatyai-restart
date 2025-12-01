@@ -5,16 +5,21 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+
+
 export interface ActivityItem {
   id: string;
   title: string;
   location: string;
   status: string;
   time: string;
+  type?: string;
+  originalId?: string;
 }
 
 interface RecentActivityProps {
   activities?: ActivityItem[];
+  onItemClick?: (activity: ActivityItem) => void;
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -40,7 +45,13 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   fulfilled: { label: "ได้รับแล้ว", className: "bg-green-500/10 text-green-500 border-green-500/20" },
 };
 
-const RecentActivity = ({ activities = [] }: RecentActivityProps) => {
+const RecentActivity = ({ activities = [], onItemClick }: RecentActivityProps) => {
+  const handleItemClick = (activity: ActivityItem) => {
+    if (onItemClick) {
+      onItemClick(activity);
+    }
+  };
+
   if (activities.length === 0) {
     return (
       <section className="animate-fade-in" style={{ animationDelay: "400ms" }}>
@@ -66,6 +77,7 @@ const RecentActivity = ({ activities = [] }: RecentActivityProps) => {
           return (
             <Card
               key={activity.id}
+              onClick={() => handleItemClick(activity)}
               className="p-4 rounded-xl border border-border bg-card hover:shadow-card transition-shadow cursor-pointer"
             >
               <div className="flex items-start justify-between gap-3">

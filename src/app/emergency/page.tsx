@@ -1,15 +1,20 @@
 "use client";
 
-import { Phone, Ambulance, ShieldAlert, FireExtinguisher } from "lucide-react";
+import { Phone, Ambulance, ShieldAlert, FireExtinguisher, Zap, Droplets, Waves, CloudSun, Landmark, LifeBuoy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function EmergencyPage() {
     const emergencyContacts = [
-        { name: "หน่วยกู้ชีพหาดใหญ่", number: "1669", icon: Ambulance, color: "text-red-600", bg: "bg-red-100" },
-        { name: "แจ้งเหตุด่วนเหตุร้าย", number: "191", icon: ShieldAlert, color: "text-blue-600", bg: "bg-blue-100" },
-        { name: "ดับเพลิง", number: "199", icon: FireExtinguisher, color: "text-orange-600", bg: "bg-orange-100" },
-        { name: "สายด่วนน้ำท่วม", number: "1111", icon: Phone, color: "text-blue-500", bg: "bg-blue-50" },
+        { name: "กู้ชีพ กู้ภัย", number: "1669", icon: Ambulance, color: "text-red-600", bg: "bg-red-100" },
+        { name: "กู้ภัยหาดใหญ่", number: "1163", icon: LifeBuoy, color: "text-orange-600", bg: "bg-orange-100" },
+        { name: "ศูนย์อุทกภัยหาดใหญ่", number: "1559", icon: Waves, color: "text-blue-600", bg: "bg-blue-100" },
+        { name: "ศูนย์ดำรงธรรม", number: "1567", icon: Landmark, color: "text-purple-600", bg: "bg-purple-100" },
+        { name: "ไฟฟ้าภูมิภาค", number: "1129", icon: Zap, color: "text-yellow-600", bg: "bg-yellow-100" },
+        { name: "ประปาภูมิภาค", number: "1662", icon: Droplets, color: "text-cyan-600", bg: "bg-cyan-100" },
+        { name: "ศูนย์อุตุนิยมวิทยา", number: "1182", icon: CloudSun, color: "text-sky-600", bg: "bg-sky-100" },
+        { name: "แจ้งเหตุด่วนเหตุร้าย", number: "191", icon: ShieldAlert, color: "text-red-800", bg: "bg-red-50" },
+        { name: "ดับเพลิง", number: "199", icon: FireExtinguisher, color: "text-orange-800", bg: "bg-orange-50" },
     ];
 
     return (

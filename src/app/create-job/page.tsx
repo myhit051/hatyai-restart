@@ -20,6 +20,12 @@ import { getJobCategories, createGeneralJob, JobData, PostingType } from "@/app/
 import { JobCategory } from "@/app/actions/general-jobs";
 import { CalendarIcon, MapPinIcon, DollarSignIcon, UserIcon } from "lucide-react";
 import { Suspense } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const POSTING_TYPES = [
   { value: "hiring", label: "หาคนทำงาน", description: "มีงานและต้องการคนมาทำ" },
@@ -216,224 +222,233 @@ function CreateJobForm() {
       </Card>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>ข้อมูลหลัก</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="title">หัวข้องาน *</Label>
-              <Input
-                id="title"
-                placeholder={postingType === "hiring" ? "ต้องการคนทำ..." : "สามารถทำ..."}
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="description">รายละเอียด *</Label>
-              <Textarea
-                id="description"
-                placeholder={postingType === "hiring"
-                  ? "รายละเอียดงานที่ต้องการจ้าง..."
-                  : "ทักษะและประสบการณ์ที่สามารถทำได้..."
-                }
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                rows={4}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="category">ประเภทงาน</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภทงาน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        <Accordion type="single" collapsible defaultValue="main-info" className="w-full space-y-4">
+          <AccordionItem value="main-info" className="border rounded-lg bg-card px-4">
+            <AccordionTrigger className="hover:no-underline py-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <span>1. ข้อมูลหลัก</span>
+                <span className="text-sm font-normal text-muted-foreground">(จำเป็น)</span>
               </div>
-
-              <div>
-                <Label htmlFor="urgency">ความเร่งด่วน</Label>
-                <Select value={urgency} onValueChange={(value) => {
-                  setUrgency(value);
-                  handleInputChange("urgency", value);
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {URGENCY_LEVELS.map((level) => (
-                      <SelectItem key={level.value} value={level.value}>
-                        {level.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {currentUrgency && (
-              <Badge className={currentUrgency.color}>
-                {currentUrgency.label}
-              </Badge>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSignIcon className="h-5 w-5" />
-              ค่าจ้างและเงื่อนไข
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="wageType">ประเภทค่าจ้าง</Label>
-                <Select value={wageType} onValueChange={(value) => {
-                  setWageType(value);
-                  handleInputChange("wage_type", value);
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WAGE_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {wageType !== "negotiable" && (
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-4">
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="wageAmount">จำนวนเงิน</Label>
+                  <Label htmlFor="title">หัวข้องาน *</Label>
                   <Input
-                    id="wageAmount"
-                    type="number"
-                    placeholder="500"
-                    value={formData.wage_amount || ""}
-                    onChange={(e) => handleInputChange("wage_amount", parseFloat(e.target.value) || undefined)}
+                    id="title"
+                    placeholder={postingType === "hiring" ? "ต้องการคนทำ..." : "สามารถทำ..."}
+                    value={formData.title}
+                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    required
                   />
                 </div>
-              )}
 
-              <div>
-                <Label htmlFor="workLocationType">สถานที่ทำงาน</Label>
-                <Select value={workLocationType} onValueChange={(value) => {
-                  setWorkLocationType(value);
-                  handleInputChange("work_location_type", value);
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WORK_LOCATION_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div>
+                  <Label htmlFor="description">รายละเอียด *</Label>
+                  <Textarea
+                    id="description"
+                    placeholder={postingType === "hiring"
+                      ? "รายละเอียดงานที่ต้องการจ้าง..."
+                      : "ทักษะและประสบการณ์ที่สามารถทำได้..."
+                    }
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    rows={4}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="category">ประเภทงาน</Label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="เลือกประเภทงาน" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="urgency">ความเร่งด่วน</Label>
+                    <Select value={urgency} onValueChange={(value) => {
+                      setUrgency(value);
+                      handleInputChange("urgency", value);
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {URGENCY_LEVELS.map((level) => (
+                          <SelectItem key={level.value} value={level.value}>
+                            {level.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {currentUrgency && (
+                  <Badge className={currentUrgency.color}>
+                    {currentUrgency.label}
+                  </Badge>
+                )}
               </div>
-            </div>
+            </AccordionContent>
+          </AccordionItem>
 
-            <div>
-              <Label htmlFor="workDuration">ระยะเวลาทำงาน (ถ้ามี)</Label>
-              <Input
-                id="workDuration"
-                placeholder="เช่น 3 วัน, 2 สัปดาห์, ตลอดเวลา"
-                value={formData.work_duration || ""}
-                onChange={(e) => handleInputChange("work_duration", e.target.value)}
+          <AccordionItem value="wage-info" className="border rounded-lg bg-card px-4">
+            <AccordionTrigger className="hover:no-underline py-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <DollarSignIcon className="h-5 w-5" />
+                <span>2. ค่าจ้างและเงื่อนไข</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-4">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="wageType">ประเภทค่าจ้าง</Label>
+                    <Select value={wageType} onValueChange={(value) => {
+                      setWageType(value);
+                      handleInputChange("wage_type", value);
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WAGE_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {wageType !== "negotiable" && (
+                    <div>
+                      <Label htmlFor="wageAmount">จำนวนเงิน</Label>
+                      <Input
+                        id="wageAmount"
+                        type="number"
+                        placeholder="500"
+                        value={formData.wage_amount || ""}
+                        onChange={(e) => handleInputChange("wage_amount", parseFloat(e.target.value) || undefined)}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="workLocationType">สถานที่ทำงาน</Label>
+                    <Select value={workLocationType} onValueChange={(value) => {
+                      setWorkLocationType(value);
+                      handleInputChange("work_location_type", value);
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WORK_LOCATION_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="workDuration">ระยะเวลาทำงาน (ถ้ามี)</Label>
+                  <Input
+                    id="workDuration"
+                    placeholder="เช่น 3 วัน, 2 สัปดาห์, ตลอดเวลา"
+                    value={formData.work_duration || ""}
+                    onChange={(e) => handleInputChange("work_duration", e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="requirements">คุณสมบัติเพิ่มเติม</Label>
+                  <Textarea
+                    id="requirements"
+                    placeholder="คุณสมบัติที่ต้องการหรือข้อกำหนดเพิ่มเติม..."
+                    value={formData.requirements || ""}
+                    onChange={(e) => handleInputChange("requirements", e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="skills" className="border rounded-lg bg-card px-4">
+            <AccordionTrigger className="hover:no-underline py-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <span>3. ทักษะที่เกี่ยวข้อง</span>
+                <Badge variant="secondary" className="ml-2">{selectedSkills.length} รายการ</Badge>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
+                {commonSkills.map((skill) => (
+                  <Badge
+                    key={skill}
+                    variant={selectedSkills.includes(skill) ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-blue-50"
+                    onClick={() => handleSkillToggle(skill)}
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-sm text-gray-500">
+                คลิกที่ทักษะเพื่อเลือก/ยกเลิกการเลือก
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="location" className="border rounded-lg bg-card px-4">
+            <AccordionTrigger className="hover:no-underline py-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <MapPinIcon className="h-5 w-5" />
+                <span>4. สถานที่</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-4">
+              <LocationPicker
+                value={location ? { lat: location.lat, lng: location.lng } : null}
+                onChange={(coords) => setLocation(prev => ({ ...coords, address: prev?.address || "" }))}
+                addressValue={location?.address || ""}
+                onAddressChange={(addr) => setLocation(prev => prev ? { ...prev, address: addr } : { lat: 0, lng: 0, address: addr })}
               />
-            </div>
+            </AccordionContent>
+          </AccordionItem>
 
-            <div>
-              <Label htmlFor="requirements">คุณสมบัติเพิ่มเติม</Label>
-              <Textarea
-                id="requirements"
-                placeholder="คุณสมบัติที่ต้องการหรือข้อกำหนดเพิ่มเติม..."
-                value={formData.requirements || ""}
-                onChange={(e) => handleInputChange("requirements", e.target.value)}
-                rows={2}
+          <AccordionItem value="images" className="border rounded-lg bg-card px-4">
+            <AccordionTrigger className="hover:no-underline py-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <span>5. รูปภาพ (ถ้ามี)</span>
+                <span className="text-sm font-normal text-muted-foreground">สูงสุด 5 รูป</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-4">
+              <ImageUpload
+                value={formData.images || []}
+                onChange={(images) => handleInputChange("images", images)}
+                onRemove={(url) => handleInputChange("images", (formData.images || []).filter(img => img !== url))}
               />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>ทักษะที่ต้องการ/สามารถทำได้</CardTitle>
-            <CardDescription>
-              เลือกทักษะที่เกี่ยวข้อง (เลือกได้หลายรายการ)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {commonSkills.map((skill) => (
-                <Badge
-                  key={skill}
-                  variant={selectedSkills.includes(skill) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-blue-50"
-                  onClick={() => handleSkillToggle(skill)}
-                >
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-            <p className="text-sm text-gray-500">
-              คลิกที่ทักษะเพื่อเลือก/ยกเลิกการเลือก (เลือกแล้ว {selectedSkills.length} รายการ)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPinIcon className="h-5 w-5" />
-              สถานที่
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LocationPicker
-              value={location ? { lat: location.lat, lng: location.lng } : null}
-              onChange={(coords) => setLocation(prev => ({ ...coords, address: prev?.address || "" }))}
-              addressValue={location?.address || ""}
-              onAddressChange={(addr) => setLocation(prev => prev ? { ...prev, address: addr } : { lat: 0, lng: 0, address: addr })}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>รูปภาพ (ถ้ามี)</CardTitle>
-            <CardDescription>
-              แนบรูปภาพเพื่อให้ข้อมูลเพิ่มเติม (สูงสุด 5 รูป)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ImageUpload
-              value={formData.images || []}
-              onChange={(images) => handleInputChange("images", images)}
-              onRemove={(url) => handleInputChange("images", (formData.images || []).filter(img => img !== url))}
-            />
-          </CardContent>
-        </Card>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <div className="flex gap-4 justify-end">
           <Button

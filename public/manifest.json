@@ -1,7 +1,7 @@
 {
-    "name": "Hat Yai Restart",
-    "short_name": "HY Restart",
-    "description": "แพลตฟอร์มฟื้นฟูเมืองหาดใหญ่",
+    "name": "Hatyai Connect",
+    "short_name": "HY Connect",
+    "description": "แพลตฟอร์ม Hatyai Connect ขับเคลื่อนโครงการ Hat Yai Restart",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

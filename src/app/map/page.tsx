@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Map, MapPin, Wrench, Trash2, Filter, Package } from "lucide-react";
+import { Map, MapPin, Wrench, Trash2, Filter, Package, List } from "lucide-react";
 import MapWrapper from "@/components/MapWrapper";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,14 @@ import { cn } from "@/lib/utils";
 import { useWasteStore } from "@/store/wasteStore";
 import { useJobStore } from "@/store/jobStore";
 import { useResourceStore } from "@/store/resourceStore";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+    DrawerDescription,
+} from "@/components/ui/drawer";
 
 type MarkerType = "waste" | "job" | "resource" | "need";
 type FilterType = "all" | MarkerType;
@@ -55,6 +63,7 @@ const MapPage = () => {
     const { resources, needs, loadData: loadResourceData } = useResourceStore();
     const [filter, setFilter] = useState<FilterType>("all");
     const [markers, setMarkers] = useState<MapMarker[]>([]);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     useEffect(() => {
         loadWasteReports();
@@ -125,111 +134,124 @@ const MapPage = () => {
     }, [wasteReports, jobs, resources, needs, filter]);
 
     return (
-        <div className="min-h-screen bg-background pb-28">
-            <main className="max-w-lg md:max-w-6xl mx-auto">
-                {/* Map Placeholder */}
-                {/* Real Map */}
-                <div className="relative h-[400px] w-full overflow-hidden shadow-md">
-                    <MapWrapper items={markers} />
-                </div>
+        <div className="h-[calc(100vh-64px)] bg-background relative flex flex-col">
+            {/* Filter Bar - Fixed Top */}
+            <div className="px-4 py-3 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 flex items-center gap-2 overflow-x-auto scrollbar-hide z-10 shadow-sm">
+                <Button variant="outline" size="sm" className="flex-shrink-0 gap-1.5 h-8">
+                    <Filter className="w-4 h-4" />
+                    <span className="hidden sm:inline">ตัวกรอง</span>
+                </Button>
+                <Badge
+                    variant={filter === "all" ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap h-7"
+                    onClick={() => setFilter("all")}
+                >
+                    ทั้งหมด ({markers.length})
+                </Badge>
+                <Badge
+                    variant={filter === "waste" ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap h-7"
+                    onClick={() => setFilter("waste")}
+                >
+                    จุดขยะ ({wasteReports.length})
+                </Badge>
+                <Badge
+                    variant={filter === "job" ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap h-7"
+                    onClick={() => setFilter("job")}
+                >
+                    งานซ่อม ({jobs.length})
+                </Badge>
+                <Badge
+                    variant={filter === "resource" ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap h-7"
+                    onClick={() => setFilter("resource")}
+                >
+                    ทรัพยากร ({resources.filter((r) => r.status === "available").length})
+                </Badge>
+                <Badge
+                    variant={filter === "need" ? "default" : "outline"}
+                    className="cursor-pointer whitespace-nowrap h-7"
+                    onClick={() => setFilter("need")}
+                >
+                    ความต้องการ ({needs.filter((n) => n.status === "pending").length})
+                </Badge>
+            </div>
 
-                {/* Filter Bar */}
-                <div className="px-4 py-3 border-b border-border bg-card flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                    <Button variant="outline" size="sm" className="flex-shrink-0 gap-1.5">
-                        <Filter className="w-4 h-4" />
-                        ตัวกรอง
-                    </Button>
-                    <Badge
-                        variant={filter === "all" ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setFilter("all")}
-                    >
-                        ทั้งหมด ({markers.length})
-                    </Badge>
-                    <Badge
-                        variant={filter === "waste" ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setFilter("waste")}
-                    >
-                        จุดขยะ ({wasteReports.length})
-                    </Badge>
-                    <Badge
-                        variant={filter === "job" ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setFilter("job")}
-                    >
-                        งานซ่อม ({jobs.length})
-                    </Badge>
-                    <Badge
-                        variant={filter === "resource" ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setFilter("resource")}
-                    >
-                        ทรัพยากร ({resources.filter((r) => r.status === "available").length})
-                    </Badge>
-                    <Badge
-                        variant={filter === "need" ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setFilter("need")}
-                    >
-                        ความต้องการ ({needs.filter((n) => n.status === "pending").length})
-                    </Badge>
-                </div>
+            {/* Map Area - Fills remaining space */}
+            <div className="flex-1 relative w-full overflow-hidden">
+                <MapWrapper items={markers} />
 
-                {/* Nearby List */}
-                <div className="px-4 py-4">
-                    <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        จุดทั้งหมด ({markers.length})
-                    </h2>
+                {/* Floating List Button */}
+                <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20">
+                    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                        <DrawerTrigger asChild>
+                            <Button className="rounded-full shadow-lg px-6 gap-2" size="lg">
+                                <List className="w-5 h-5" />
+                                แสดงรายการ ({markers.length})
+                            </Button>
+                        </DrawerTrigger>
+                        <DrawerContent className="h-[80vh]">
+                            <DrawerHeader>
+                                <DrawerTitle>รายการจุดทั้งหมด ({markers.length})</DrawerTitle>
+                                <DrawerDescription>
+                                    แสดงรายการจุดที่พบในแผนที่ตามตัวกรองปัจจุบัน
+                                </DrawerDescription>
+                            </DrawerHeader>
+                            <div className="px-4 pb-8 overflow-y-auto h-full">
+                                {markers.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <p className="text-muted-foreground">ไม่มีข้อมูลในขณะนี้</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {markers.map((marker, index) => {
+                                            const config = typeConfig[marker.type];
+                                            const Icon = config.icon;
 
-                    {markers.length === 0 ? (
-                        <Card className="p-8 text-center">
-                            <p className="text-muted-foreground">ไม่มีข้อมูลในขณะนี้</p>
-                        </Card>
-                    ) : (
-                        <div className="space-y-3">
-                            {markers.map((marker, index) => {
-                                const config = typeConfig[marker.type];
-                                const Icon = config.icon;
-
-                                return (
-                                    <Card
-                                        key={marker.id}
-                                        className={cn(
-                                            "p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all cursor-pointer active:scale-[0.98] animate-fade-in"
-                                        )}
-                                        style={{ animationDelay: `${index * 100}ms` }}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", config.bgColor)}>
-                                                <Icon className="w-5 h-5 text-white" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-medium text-foreground truncate">{marker.title}</h3>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <span className="truncate">{marker.location}</span>
-                                                    {marker.status && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <Badge variant="outline" className="text-xs">
-                                                                {marker.status}
-                                                            </Badge>
-                                                        </>
+                                            return (
+                                                <Card
+                                                    key={marker.id}
+                                                    className={cn(
+                                                        "p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all cursor-pointer active:scale-[0.98]"
                                                     )}
-                                                </div>
-                                            </div>
-                                            <Button variant="outline" size="sm" className={cn("flex-shrink-0", config.textColor)}>
-                                                ดู
-                                            </Button>
-                                        </div>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    )}
+                                                    onClick={() => {
+                                                        // Optional: Center map on click (would need callback to MapWrapper)
+                                                        setIsDrawerOpen(false);
+                                                    }}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", config.bgColor)}>
+                                                            <Icon className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-medium text-foreground truncate">{marker.title}</h3>
+                                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                <span className="truncate">{marker.location}</span>
+                                                                {marker.status && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <Badge variant="outline" className="text-xs">
+                                                                            {marker.status}
+                                                                        </Badge>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <Button variant="outline" size="sm" className={cn("flex-shrink-0", config.textColor)}>
+                                                            ดู
+                                                        </Button>
+                                                    </div>
+                                                </Card>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </DrawerContent>
+                    </Drawer>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };
