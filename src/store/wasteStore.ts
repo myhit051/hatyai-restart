@@ -8,6 +8,7 @@ import {
   type WasteStatus,
   type WasteType,
   type SeverityLevel,
+  deleteWasteReport,
 } from '@/app/actions/waste';
 
 export type { WasteType, WasteStatus } from '@/app/actions/waste';
@@ -37,6 +38,7 @@ interface WasteState {
   getWasteByLocation: (bounds: { north: number; south: number; east: number; west: number }) => WasteReport[];
   getHighRiskWaste: () => WasteReport[];
   loadReports: (userId?: string) => Promise<void>;
+  deleteReport: (id: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const mapWasteReport = (report: WasteReportDB): WasteReport => {
@@ -128,5 +130,13 @@ export const useWasteStore = create<WasteState>((set, get) => ({
     return get().wasteReports.filter(
       report => report.severity === 'high' && report.status !== 'cleared'
     );
+  },
+
+  deleteReport: async (id: string) => {
+    const result = await deleteWasteReport(id);
+    if (result.success) {
+      await get().loadReports();
+    }
+    return result;
   },
 }));

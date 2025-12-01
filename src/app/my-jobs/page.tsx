@@ -10,6 +10,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useJobStore } from "@/store/jobStore";
 import { useWasteStore } from "@/store/wasteStore";
 import { useResourceStore } from "@/store/resourceStore";
+import { UniversalDetailModal, ItemType } from "@/components/UniversalDetailModal";
 
 interface JobItem {
     id: string;
@@ -51,12 +52,15 @@ const typeConfig = {
     need: { label: "ขอความช่วยเหลือ", color: "text-orange-500" },
 };
 
-const JobCard = ({ job, onDelete }: { job: JobItem; onDelete: (job: JobItem) => void }) => {
+const JobCard = ({ job, onDelete, onClick }: { job: JobItem; onDelete: (job: JobItem) => void; onClick: (job: JobItem) => void }) => {
     const status = statusConfig[job.status] || { label: job.status, className: "bg-gray-100 text-gray-500" };
     const type = typeConfig[job.type];
 
     return (
-        <Card className="p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all cursor-pointer active:scale-[0.98]">
+        <Card
+            className="p-4 rounded-xl border border-border bg-card hover:shadow-card transition-all cursor-pointer active:scale-[0.98]"
+            onClick={() => onClick(job)}
+        >
             <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex-1">
                     <p className={cn("text-xs font-medium mb-1", type.color)}>{type.label}</p>
@@ -97,9 +101,13 @@ const JobCard = ({ job, onDelete }: { job: JobItem; onDelete: (job: JobItem) => 
 const MyJobsPage = () => {
     const { user } = useAuthStore();
     const { myJobs: repairJobs, loadJobs, deleteJob } = useJobStore();
-    const { myReports: wasteReports, loadReports } = useWasteStore();
-    const { resources, needs, loadData: loadResourceData } = useResourceStore();
+    const { myReports: wasteReports, loadReports, deleteReport } = useWasteStore();
+    const { resources, needs, loadData: loadResourceData, deleteResource, deleteNeed } = useResourceStore();
     const [allJobs, setAllJobs] = useState<JobItem[]>([]);
+
+    // Modal State
+    const [selectedItem, setSelectedItem] = useState<JobItem | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -177,15 +185,34 @@ const MyJobsPage = () => {
     const handleDelete = async (job: JobItem) => {
         if (!confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) return;
 
+        let result;
         if (job.type === 'help') {
-            const result = await deleteJob(job.originalData.id);
-            if (result.success) {
-                // State will be updated by useJobStore and then the useEffect will re-run
-            } else {
-                alert("ลบไม่สำเร็จ: " + result.error);
-            }
-        } else {
-            alert("ขณะนี้รองรับการลบเฉพาะงานซ่อม/งานทั่วไปเท่านั้น");
+            result = await deleteJob(job.originalData.id);
+        } else if (job.type === 'waste') {
+            result = await deleteReport(job.originalData.id);
+        } else if (job.type === 'donation') {
+            result = await deleteResource(job.originalData.id);
+        } else if (job.type === 'need') {
+            result = await deleteNeed(job.originalData.id);
+        }
+
+        if (result && !result.success) {
+            alert("ลบไม่สำเร็จ: " + result.error);
+        }
+    };
+
+    const handleCardClick = (job: JobItem) => {
+        setSelectedItem(job);
+        setIsModalOpen(true);
+    };
+
+    const getModalType = (jobType: string): ItemType => {
+        switch (jobType) {
+            case 'help': return 'job';
+            case 'waste': return 'waste';
+            case 'donation': return 'resource';
+            case 'need': return 'need';
+            default: return 'job';
         }
     };
 
@@ -225,7 +252,14 @@ const MyJobsPage = () => {
 
                     <TabsContent value="active" className="space-y-3 animate-fade-in">
                         {activeJobs.length > 0 ? (
-                            activeJobs.map((job) => <JobCard key={job.id} job={job} onDelete={handleDelete} />)
+                            activeJobs.map((job) => (
+                                <JobCard
+                                    key={job.id}
+                                    job={job}
+                                    onDelete={handleDelete}
+                                    onClick={handleCardClick}
+                                />
+                            ))
                         ) : (
                             <div className="text-center py-10 text-muted-foreground">
                                 <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -236,7 +270,14 @@ const MyJobsPage = () => {
 
                     <TabsContent value="completed" className="space-y-3 animate-fade-in">
                         {completedJobs.length > 0 ? (
-                            completedJobs.map((job) => <JobCard key={job.id} job={job} onDelete={handleDelete} />)
+                            completedJobs.map((job) => (
+                                <JobCard
+                                    key={job.id}
+                                    job={job}
+                                    onDelete={handleDelete}
+                                    onClick={handleCardClick}
+                                />
+                            ))
                         ) : (
                             <div className="text-center py-10 text-muted-foreground">
                                 <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -246,6 +287,15 @@ const MyJobsPage = () => {
                     </TabsContent>
                 </Tabs>
             </main>
+
+            {selectedItem && (
+                <UniversalDetailModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    type={getModalType(selectedItem.type)}
+                    data={selectedItem.originalData}
+                />
+            )}
         </div>
     );
 };

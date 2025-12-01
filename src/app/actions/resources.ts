@@ -199,3 +199,31 @@ export async function updateNeedStatus(id: string, status: string) {
         return { success: false, error };
     }
 }
+
+export async function deleteResource(id: string) {
+    try {
+        await turso.execute({
+            sql: "DELETE FROM resources WHERE id = ?",
+            args: [id]
+        });
+        revalidatePath('/resources');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete resource:", error);
+        return { success: false, error };
+    }
+}
+
+export async function deleteNeed(id: string) {
+    try {
+        await turso.execute({
+            sql: "DELETE FROM needs WHERE id = ?",
+            args: [id]
+        });
+        revalidatePath('/resources');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete need:", error);
+        return { success: false, error };
+    }
+}

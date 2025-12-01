@@ -75,15 +75,20 @@ const Header = () => {
           <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
               <>
-                <span className="hidden sm:block text-sm text-muted-foreground">
-                  {user.name}
-                </span>
-                <Avatar className="h-9 w-9 ring-2 ring-primary/20">
-                  <AvatarImage src={user.profile?.avatar} alt={user.name} />
-                  <AvatarFallback className="bg-primary-light text-primary font-medium">
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div
+                  className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => router.push('/profile')}
+                >
+                  <span className="hidden sm:block text-sm text-muted-foreground font-medium">
+                    {user.name}
+                  </span>
+                  <Avatar className="h-9 w-9 ring-2 ring-primary/20">
+                    <AvatarImage src={user.profile?.avatar} alt={user.name} />
+                    <AvatarFallback className="bg-primary-light text-primary font-medium">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"

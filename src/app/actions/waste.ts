@@ -119,3 +119,18 @@ export async function updateWasteStatus(
         return { success: false, error: "Failed to update waste status" };
     }
 }
+
+export async function deleteWasteReport(id: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await turso.execute({
+            sql: "DELETE FROM waste_reports WHERE id = ?",
+            args: [id],
+        });
+
+        revalidatePath("/waste");
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting waste report:", error);
+        return { success: false, error: "Failed to delete waste report" };
+    }
+}

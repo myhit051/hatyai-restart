@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -83,26 +82,24 @@ const ProfilePage = () => {
                         </div>
                     </div>
 
-                    {/* Role Switcher (Dev Mode) */}
-                    <div className="mt-4 pt-4 border-t border-border">
-                        <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                            เปลี่ยนบทบาท (สำหรับทดสอบ)
-                        </label>
-                        <Select
-                            value={user.role}
-                            onValueChange={handleRoleChange}
-                            disabled={isUpdating}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="เลือกบทบาท" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="general_user">ผู้ใช้งานทั่วไป (General User)</SelectItem>
-                                <SelectItem value="technician">ช่าง/คนรับงาน (Technician)</SelectItem>
-                                <SelectItem value="admin">ผู้ดูแลระบบ (Admin)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {/* Admin Menu */}
+                    {user.role === 'admin' && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                            <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                                ผู้ดูแลระบบ
+                            </label>
+                            <button
+                                onClick={() => router.push('/admin/users')}
+                                className="w-full flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors text-primary"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <Shield className="w-4 h-4" />
+                                </div>
+                                <span className="flex-1 text-left font-medium">จัดการสมาชิก</span>
+                                <ChevronRight className="w-4 h-4 opacity-50" />
+                            </button>
+                        </div>
+                    )}
                 </Card>
 
                 {/* Menu */}

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getResources, getNeeds, createResource, createNeed, updateResourceStatus, updateNeedStatus, ResourceData, NeedData } from '@/app/actions/resources';
+import { getResources, getNeeds, createResource, createNeed, updateResourceStatus, updateNeedStatus, deleteResource, deleteNeed, ResourceData, NeedData } from '@/app/actions/resources';
 
 export type ResourceType = 'food' | 'water' | 'medicine' | 'shelter' | 'clothing' | 'tools' | 'construction' | 'other';
 export type ResourceStatus = 'available' | 'assigned' | 'distributed' | 'expired';
@@ -69,6 +69,8 @@ interface ResourceState {
   getNeedsByUrgency: (urgency: string) => ResourceNeed[];
   findMatches: (needId: string) => Resource[];
   loadData: () => Promise<void>;
+  deleteResource: (id: string) => Promise<{ success: boolean; error?: any }>;
+  deleteNeed: (id: string) => Promise<{ success: boolean; error?: any }>;
 }
 
 export const useResourceStore = create<ResourceState>((set, get) => ({
@@ -207,5 +209,21 @@ export const useResourceStore = create<ResourceState>((set, get) => ({
       console.error("Load data failed:", error);
       set({ isLoading: false });
     }
-  }
+  },
+
+  deleteResource: async (id: string) => {
+    const result = await deleteResource(id);
+    if (result.success) {
+      await get().loadData();
+    }
+    return result;
+  },
+
+  deleteNeed: async (id: string) => {
+    const result = await deleteNeed(id);
+    if (result.success) {
+      await get().loadData();
+    }
+    return result;
+  },
 }));

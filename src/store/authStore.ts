@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createClient } from '@/lib/supabase/client';
-import { syncUser } from '@/app/actions/user';
+import { syncUser, getUser } from '@/app/actions/user';
 
 export type UserRole = 'general_user' | 'technician' | 'admin';
 
@@ -41,16 +41,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // In a real app, we would fetch the user's profile from our database here
-        // For now, we'll construct a basic user object from metadata
+        // Fetch latest user data from our DB to get the real role
+        // We import getUser dynamically to avoid server-side code issues if this file is imported in client components
+        // But since this is a store, it runs on client. We need to call the server action.
+        // Note: We need to import getUser at the top level, but it's a server action so it's fine to call from client.
+
+        // Default from metadata
         const metadata = session.user.user_metadata || {};
+        let role = (metadata.role as UserRole) || 'general_user';
+
+        // Try to get real role from DB
+        try {
+          const dbUser = await getUser(session.user.id);
+          if (dbUser.success && dbUser.user) {
+            role = dbUser.user.role as UserRole;
+          }
+        } catch (e) {
+          console.error("Failed to fetch user role from DB, falling back to session", e);
+        }
 
         const user: User = {
           id: session.user.id,
           email: session.user.email!,
           name: metadata.name || session.user.email?.split('@')[0] || 'User',
           phone: metadata.phone || '',
-          role: (metadata.role as UserRole) || 'general_user',
+          role: role,
           profile: {
             avatar: metadata.avatar_url || '',
             skills: metadata.skills || [],
@@ -61,7 +76,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
         };
 
-        // Sync user to Turso
+        // Sync user to Turso (background)
         syncUser({
           id: user.id,
           email: user.email,
@@ -135,7 +150,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin} /auth/callback`,
         },
       });
       if (error) throw error;
