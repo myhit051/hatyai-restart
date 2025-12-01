@@ -454,6 +454,17 @@ export async function createJobApplication(
   message?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "กรุณาเข้าสู่ระบบก่อนสมัครงาน" };
+    }
+
+    if (user.id !== applicantId) {
+      return { success: false, error: "ไม่สามารถสมัครงานแทนผู้อื่นได้" };
+    }
+
     const id = `app_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     await turso.execute({
@@ -475,6 +486,17 @@ export async function createJobApplication(
 // Job Contacts (for tracking contact info access)
 export async function showJobContact(jobId: string, userId: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "กรุณาเข้าสู่ระบบ" };
+    }
+
+    if (user.id !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
     // Check if user has already accessed contact info
     const existingContact = await turso.execute({
       sql: 'SELECT id FROM job_contacts WHERE job_id = ? AND user_id = ?',

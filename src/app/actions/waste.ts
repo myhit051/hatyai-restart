@@ -2,6 +2,7 @@
 
 import { turso } from "@/lib/turso";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
 
 export type WasteType = "organic" | "plastic" | "hazardous" | "construction" | "mixed";
 export type WasteStatus = "reported" | "acknowledged" | "in_progress" | "cleared";
@@ -64,10 +65,23 @@ export async function getWasteReports(): Promise<WasteReport[]> {
     }
 }
 
+
+
 export async function createWasteReport(
     data: WasteReportData
 ): Promise<{ success: boolean; error?: string }> {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: "กรุณาเข้าสู่ระบบก่อนแจ้งปัญหา" };
+        }
+
+        if (user.id !== data.reporter_id) {
+            return { success: false, error: "ไม่สามารถแจ้งปัญหาแทนผู้อื่นได้" };
+        }
+
         const id = `waste_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
 

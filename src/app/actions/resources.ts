@@ -2,6 +2,7 @@
 
 import { turso } from "@/lib/turso";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
 
 // Types matching the store interfaces (simplified for actions)
 export interface ResourceData {
@@ -102,6 +103,17 @@ export async function getNeeds() {
 
 export async function createResource(data: ResourceData) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: "กรุณาเข้าสู่ระบบก่อนบริจาค" };
+        }
+
+        if (user.id !== data.donorId) {
+            return { success: false, error: "ไม่สามารถบริจาคแทนผู้อื่นได้" };
+        }
+
         const id = crypto.randomUUID();
         const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
 
@@ -138,6 +150,17 @@ export async function createResource(data: ResourceData) {
 
 export async function createNeed(data: NeedData) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, error: "กรุณาเข้าสู่ระบบก่อนขอความช่วยเหลือ" };
+        }
+
+        if (user.id !== data.requesterId) {
+            return { success: false, error: "ไม่สามารถขอความช่วยเหลือแทนผู้อื่นได้" };
+        }
+
         const id = crypto.randomUUID();
         const coordinatesJson = data.coordinates ? JSON.stringify(data.coordinates) : null;
 
