@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { updateUserRole } from "@/app/actions/user";
+import { toast } from "sonner";
 import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, Award, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
@@ -16,13 +17,35 @@ interface MenuItem {
     icon: React.ElementType;
     badge?: string;
     variant?: "default" | "destructive";
+    action?: (router: any) => void;
 }
 
 const menuItems: MenuItem[] = [
-    { id: "settings", label: "ตั้งค่าบัญชี", icon: Settings },
-    { id: "notifications", label: "การแจ้งเตือน", icon: Bell, badge: "3" },
-    { id: "privacy", label: "ความเป็นส่วนตัว", icon: Shield },
-    { id: "help", label: "ช่วยเหลือ", icon: HelpCircle },
+    {
+        id: "settings",
+        label: "ตั้งค่าบัญชี",
+        icon: Settings,
+        action: (router) => toast.info("ระบบกำลังพัฒนา", { description: "ฟีเจอร์นี้จะเปิดให้ใช้งานเร็วๆ นี้" })
+    },
+    {
+        id: "notifications",
+        label: "การแจ้งเตือน",
+        icon: Bell,
+        badge: "3",
+        action: (router) => toast.info("ระบบกำลังพัฒนา", { description: "ฟีเจอร์นี้จะเปิดให้ใช้งานเร็วๆ นี้" })
+    },
+    {
+        id: "privacy",
+        label: "ความเป็นส่วนตัว",
+        icon: Shield,
+        action: (router) => router.push("/privacy-policy")
+    },
+    {
+        id: "help",
+        label: "ช่วยเหลือ",
+        icon: HelpCircle,
+        action: (router) => toast.info("ระบบกำลังพัฒนา", { description: "ฟีเจอร์นี้จะเปิดให้ใช้งานเร็วๆ นี้" })
+    },
 ];
 
 const ProfilePage = () => {
@@ -108,7 +131,10 @@ const ProfilePage = () => {
                         const Icon = item.icon;
                         return (
                             <div key={item.id}>
-                                <button className="w-full flex items-center gap-3 p-4 hover:bg-secondary transition-colors tap-highlight-none active:bg-secondary">
+                                <button
+                                    onClick={() => item.action?.(router)}
+                                    className="w-full flex items-center gap-3 p-4 hover:bg-secondary transition-colors tap-highlight-none active:bg-secondary"
+                                >
                                     <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
                                         <Icon className="w-5 h-5 text-muted-foreground" />
                                     </div>

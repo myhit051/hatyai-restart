@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useResourceStore } from "@/store/resourceStore";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { UniversalDetailModal } from "@/components/UniversalDetailModal";
 
 const ResourceDashboard = () => {
     const { user } = useAuthStore();
+    const router = useRouter();
     const { resources, needs, donateResource, requestNeed, matchResource, findMatches, loadData, myDonations, myNeeds, availableResources, pendingNeeds, updateResourceStatus, updateNeedStatus } = useResourceStore();
     const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
     const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
@@ -191,13 +193,21 @@ const ResourceDashboard = () => {
                         </div>
 
                         <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    if (!user) {
+                                        router.push('/login');
+                                    } else {
+                                        setIsRequestDialogOpen(true);
+                                    }
+                                }}
+                            >
+                                <UsersIcon className="h-4 w-4 mr-2" />
+                                ขอรับความช่วยเหลือ
+                            </Button>
+
                             <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button variant="outline">
-                                        <UsersIcon className="h-4 w-4 mr-2" />
-                                        ขอรับความช่วยเหลือ
-                                    </Button>
-                                </DialogTrigger>
                                 <DialogContent className="max-w-md">
                                     <DialogHeader>
                                         <DialogTitle>ขอรับความช่วยเหลือ</DialogTitle>
@@ -303,13 +313,20 @@ const ResourceDashboard = () => {
                                 </DialogContent>
                             </Dialog>
 
+                            <Button
+                                onClick={() => {
+                                    if (!user) {
+                                        router.push('/login');
+                                    } else {
+                                        setIsDonateDialogOpen(true);
+                                    }
+                                }}
+                            >
+                                <HeartIcon className="h-4 w-4 mr-2" />
+                                บริจาคทรัพยากร
+                            </Button>
+
                             <Dialog open={isDonateDialogOpen} onOpenChange={setIsDonateDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <HeartIcon className="h-4 w-4 mr-2" />
-                                        บริจาคทรัพยากร
-                                    </Button>
-                                </DialogTrigger>
                                 <DialogContent className="max-w-md">
                                     <DialogHeader>
                                         <DialogTitle>บริจาคทรัพยากร</DialogTitle>

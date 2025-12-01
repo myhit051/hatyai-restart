@@ -29,12 +29,15 @@ import {
     CheckCircle,
     Box,
     ArrowRight,
-    Heart
+    Heart,
+    LockIcon
 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import dynamic from 'next/dynamic';
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 const Map = dynamic(() => import("@/components/Map"), {
     ssr: false,
@@ -65,6 +68,9 @@ const POSTING_TYPE_COLORS = {
 } as const;
 
 export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalDetailModalProps) {
+    const { isAuthenticated } = useAuthStore();
+    const router = useRouter();
+
     if (!data) return null;
 
     // Helper functions
@@ -94,6 +100,23 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
             negotiable: ""
         };
         return `${wageText}${unitMap[wageType || ''] || ""}`;
+    };
+
+    const renderProtectedName = (name: string, label: string) => {
+        if (isAuthenticated) {
+            return (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <UserIcon className="h-4 w-4" />
+                    <span>{label}: {name}</span>
+                </div>
+            );
+        }
+        return (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-100 px-2 py-1 rounded-md cursor-pointer hover:bg-gray-200 transition-colors" onClick={() => { onClose(); router.push('/login'); }}>
+                <LockIcon className="h-3 w-3" />
+                <span>เข้าสู่ระบบเพื่อดูชื่อผู้แจ้ง</span>
+            </div>
+        );
     };
 
     // Render Content based on Type
@@ -188,10 +211,7 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                                     <CalendarIcon className="h-4 w-4" />
                                     <span>แจ้งเมื่อ {formatDate(data.createdAt || data.created_at)}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <UserIcon className="h-4 w-4" />
-                                    <span>ผู้แจ้ง: {data.requesterName || data.requester_name || "ไม่ระบุ"}</span>
-                                </div>
+                                {renderProtectedName(data.requesterName || data.requester_name || "ไม่ระบุ", "ผู้แจ้ง")}
                             </CardContent>
                         </Card>
                     </div>
@@ -333,26 +353,38 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <Avatar className="h-12 w-12">
-                                    <AvatarImage src={`/api/users/${isHiring ? data.employer_id : data.seeker_id}/avatar`} />
-                                    <AvatarFallback>
-                                        {(isHiring ? data.employer_name : data.seeker_name)?.charAt(0) || "U"}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">
-                                        {isHiring ? data.employer_name : data.seeker_name || "ไม่ระบุชื่อ"}
-                                    </p>
-                                    <p className="text-sm text-gray-500">
-                                        {isHiring ? "ผู้ประกาศงาน" : "ผู้หางาน"}
-                                    </p>
+                            {isAuthenticated ? (
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-12 w-12">
+                                        <AvatarImage src={`/api/users/${isHiring ? data.employer_id : data.seeker_id}/avatar`} />
+                                        <AvatarFallback>
+                                            {(isHiring ? data.employer_name : data.seeker_name)?.charAt(0) || "U"}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-medium">
+                                            {isHiring ? data.employer_name : data.seeker_name || "ไม่ระบุชื่อ"}
+                                        </p>
+                                        <p className="text-sm text-gray-500">
+                                            {isHiring ? "ผู้ประกาศงาน" : "ผู้หางาน"}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                    <LockIcon className="h-8 w-8 text-gray-300 mb-2" />
+                                    <p className="text-sm text-muted-foreground mb-2">เข้าสู่ระบบเพื่อดูข้อมูลผู้ประกาศ</p>
+                                    <Button variant="outline" size="sm" onClick={() => { onClose(); router.push('/login'); }}>
+                                        เข้าสู่ระบบ
+                                    </Button>
+                                </div>
+                            )}
 
-                            <Button className="w-full bg-green-600 hover:bg-green-700">
-                                แสดงข้อมูลติดต่อ
-                            </Button>
+                            {isAuthenticated && (
+                                <Button className="w-full bg-green-600 hover:bg-green-700">
+                                    แสดงข้อมูลติดต่อ
+                                </Button>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -387,7 +419,7 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                         </CardContent>
                     </Card>
 
-                    {!isHiring && !isExpired && (
+                    {!isHiring && !isExpired && isAuthenticated && (
                         <Button className="w-full bg-blue-600 hover:bg-blue-700">
                             สมัครงานนี้
                         </Button>
@@ -482,10 +514,7 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                                 <CalendarIcon className="h-4 w-4" />
                                 <span>แจ้งเมื่อ {formatDate(data.createdAt)}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <UserIcon className="h-4 w-4" />
-                                <span>ผู้แจ้ง: {data.reporterName}</span>
-                            </div>
+                            {renderProtectedName(data.reporterName, "ผู้แจ้ง")}
                         </CardContent>
                     </Card>
                 </div>
@@ -588,16 +617,15 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                                 <CalendarIcon className="h-4 w-4" />
                                 <span>เมื่อ {formatDate(data.createdAt)}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <UserIcon className="h-4 w-4" />
-                                <span>{isNeed ? `ผู้ขอ: ${data.requesterName}` : `ผู้บริจาค: ${data.donorName}`}</span>
-                            </div>
+                            {renderProtectedName(isNeed ? data.requesterName : data.donorName, isNeed ? "ผู้ขอ" : "ผู้บริจาค")}
                         </CardContent>
                     </Card>
 
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                        {isNeed ? "ให้ความช่วยเหลือ" : "ขอรับบริจาค"}
-                    </Button>
+                    {isAuthenticated && (
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                            {isNeed ? "ให้ความช่วยเหลือ" : "ขอรับบริจาค"}
+                        </Button>
+                    )}
                 </div>
             </div>
         );

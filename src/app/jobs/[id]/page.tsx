@@ -23,7 +23,8 @@ import {
   MessageCircleIcon,
   UsersIcon,
   TargetIcon,
-  WrenchIcon
+  WrenchIcon,
+  LockIcon
 } from "lucide-react";
 import {
   getGeneralJobById,
@@ -38,6 +39,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 import Map from "@/components/Map";
+import { useAuthStore } from "@/store/authStore";
 
 const URGENCY_COLORS = {
   low: "bg-green-100 text-green-800",
@@ -63,6 +65,7 @@ export default function JobDetailPage() {
   const router = useRouter();
   const params = useParams();
   const jobId = params?.id as string;
+  const { isAuthenticated, user } = useAuthStore();
 
   const [job, setJob] = useState<GeneralJob | null>(null);
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -93,7 +96,7 @@ export default function JobDetailPage() {
       setApplications(applicationsData);
 
       // Check if user has already viewed contact info
-      if (jobData) {
+      if (jobData && isAuthenticated) {
         const response = await fetch(`/api/jobs/${jobId}/contact-status`);
         if (response.ok) {
           const data = await response.json();
@@ -113,9 +116,19 @@ export default function JobDetailPage() {
   };
 
   const handleShowContact = async () => {
+    if (!isAuthenticated || !user) {
+      toast({
+        title: "กรุณาเข้าสู่ระบบ",
+        description: "คุณต้องเข้าสู่ระบบเพื่อดูข้อมูลติดต่อ",
+        variant: "destructive",
+      });
+      router.push("/login");
+      return;
+    }
+
     try {
       // In a real app, we'd get current user ID
-      const userId = "current_user_id"; // This would come from auth
+      const userId = user.id;
 
       const result = await showJobContact(jobId, userId);
 
@@ -143,11 +156,21 @@ export default function JobDetailPage() {
   };
 
   const handleApply = async () => {
+    if (!isAuthenticated || !user) {
+      toast({
+        title: "กรุณาเข้าสู่ระบบ",
+        description: "คุณต้องเข้าสู่ระบบเพื่อสมัครงาน",
+        variant: "destructive",
+      });
+      router.push("/login");
+      return;
+    }
+
     try {
       setIsApplying(true);
 
       // In a real app, we'd get current user ID
-      const userId = "current_user_id"; // This would come from auth
+      const userId = user.id;
 
       const result = await createJobApplication(
         jobId,
@@ -443,24 +466,34 @@ export default function JobDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={`/api/users/${isHiring ? job.employer_id : job.seeker_id}/avatar`} />
-                  <AvatarFallback>
-                    {(isHiring ? job.employer_name : job.seeker_name)?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">
-                    {isHiring ? job.employer_name : job.seeker_name || "ไม่ระบุชื่อ"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {isHiring ? "ผู้ประกาศงาน" : "ผู้หางาน"}
-                  </p>
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={`/api/users/${isHiring ? job.employer_id : job.seeker_id}/avatar`} />
+                    <AvatarFallback>
+                      {(isHiring ? job.employer_name : job.seeker_name)?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">
+                      {isHiring ? job.employer_name : job.seeker_name || "ไม่ระบุชื่อ"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {isHiring ? "ผู้ประกาศงาน" : "ผู้หางาน"}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                  <LockIcon className="h-8 w-8 text-gray-300 mb-2" />
+                  <p className="text-sm text-muted-foreground mb-2">เข้าสู่ระบบเพื่อดูข้อมูลผู้ประกาศ</p>
+                  <Button variant="outline" size="sm" onClick={() => router.push('/login')}>
+                    เข้าสู่ระบบ
+                  </Button>
+                </div>
+              )}
 
-              {showContactInfo && (
+              {isAuthenticated && showContactInfo && (
                 <div className="space-y-3 pt-3 border-t">
                   {job.contact_person && (
                     <div className="flex items-center gap-2 text-sm">
@@ -493,7 +526,7 @@ export default function JobDetailPage() {
                 </div>
               )}
 
-              {!showContactInfo && !isExpired && (
+              {isAuthenticated && !showContactInfo && !isExpired && (
                 <Button
                   onClick={handleShowContact}
                   className="w-full bg-green-600 hover:bg-green-700"
@@ -568,23 +601,35 @@ export default function JobDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="message">ข้อความถึงผู้ประกาศงาน (ไม่จำเป็น)</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="บอกเกี่ยวกับตัวคุณและทักษะที่เกี่ยวข้อง..."
-                    value={applicationMessage}
-                    onChange={(e) => setApplicationMessage(e.target.value)}
-                    rows={4}
-                  />
-                </div>
-                <Button
-                  onClick={handleApply}
-                  disabled={isApplying}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  {isApplying ? "กำลังสมัคร..." : "สมัครงานนี้"}
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <div>
+                      <Label htmlFor="message">ข้อความถึงผู้ประกาศงาน (ไม่จำเป็น)</Label>
+                      <Textarea
+                        id="message"
+                        placeholder="บอกเกี่ยวกับตัวคุณและทักษะที่เกี่ยวข้อง..."
+                        value={applicationMessage}
+                        onChange={(e) => setApplicationMessage(e.target.value)}
+                        rows={4}
+                      />
+                    </div>
+                    <Button
+                      onClick={handleApply}
+                      disabled={isApplying}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isApplying ? "กำลังสมัคร..." : "สมัครงานนี้"}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <LockIcon className="h-8 w-8 text-gray-300 mb-2" />
+                    <p className="text-sm text-muted-foreground mb-2">เข้าสู่ระบบเพื่อสมัครงาน</p>
+                    <Button variant="outline" size="sm" onClick={() => router.push('/login')}>
+                      เข้าสู่ระบบ
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

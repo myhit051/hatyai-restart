@@ -17,7 +17,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, children }) =>
                     <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
                         <Waves className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">หาดใหญ่ Restart</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Hatyai Connect</h1>
                     <p className="text-sm text-gray-600 text-center">{subtitle}</p>
                 </div>
 

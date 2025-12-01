@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useWasteStore } from "@/store/wasteStore";
 import { useJobStore } from "@/store/jobStore";
 import { useResourceStore } from "@/store/resourceStore";
+import { useAuthStore } from "@/store/authStore";
 import {
     Drawer,
     DrawerContent,
@@ -58,6 +59,7 @@ const typeConfig = {
 };
 
 const MapPage = () => {
+    const { user } = useAuthStore();
     const { wasteReports, loadReports: loadWasteReports } = useWasteStore();
     const { jobs, loadJobs } = useJobStore();
     const { resources, needs, loadData: loadResourceData } = useResourceStore();
@@ -121,7 +123,7 @@ const MapPage = () => {
             if ((filter === "all" || filter === "need") && need.status === "pending") {
                 allMarkers.push({
                     id: `need-${need.id}`,
-                    title: `ต้องการ${need.requesterName ? ` - ${need.requesterName}` : ""}`,
+                    title: `ต้องการ${(user && need.requesterName) ? ` - ${need.requesterName}` : ""}`,
                     type: "need",
                     location: need.location,
                     status: need.status,
@@ -131,7 +133,7 @@ const MapPage = () => {
         });
 
         setMarkers(allMarkers);
-    }, [wasteReports, jobs, resources, needs, filter]);
+    }, [wasteReports, jobs, resources, needs, filter, user]);
 
     return (
         <div className="h-[calc(100vh-64px)] bg-background relative flex flex-col">

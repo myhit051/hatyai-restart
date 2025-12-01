@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useJobStore } from "@/store/jobStore";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import LocationPicker from "@/components/LocationPicker";
 
 const RepairDashboard = () => {
     const { user } = useAuthStore();
+    const router = useRouter();
     const { jobs, createJob, assignJob, updateJobStatus, loadJobs, myJobs, availableJobs } = useJobStore();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [newJob, setNewJob] = useState({
@@ -131,13 +133,20 @@ const RepairDashboard = () => {
                         <p className="text-muted-foreground">จัดการคำขอซ่อมแซมและค้นหาช่างผู้เชี่ยวชาญ</p>
                     </div>
 
+                    <Button
+                        onClick={() => {
+                            if (!user) {
+                                router.push('/login');
+                            } else {
+                                setIsCreateDialogOpen(true);
+                            }
+                        }}
+                    >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        แจ้งซ่อม
+                    </Button>
+
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <PlusIcon className="h-4 w-4 mr-2" />
-                                แจ้งซ่อม
-                            </Button>
-                        </DialogTrigger>
                         <DialogContent className="max-w-md">
                             <DialogHeader>
                                 <DialogTitle>แจ้งซ่อม</DialogTitle>
@@ -306,7 +315,7 @@ const RepairDashboard = () => {
                                         </div>
 
                                         <div className="text-xs text-muted-foreground">
-                                            📍 {job.location} • 👤 {job.requesterName}
+                                            📍 {job.location} {user && `• 👤 ${job.requesterName}`}
                                         </div>
                                     </div>
                                 ))
@@ -357,7 +366,7 @@ const RepairDashboard = () => {
                                         </div>
 
                                         <div className="text-xs text-muted-foreground">
-                                            📍 {job.location} • 👤 {job.requesterName}
+                                            📍 {job.location} {user && `• 👤 ${job.requesterName}`}
                                         </div>
 
                                         {job.assignedTechnicianName && (

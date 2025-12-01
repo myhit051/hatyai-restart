@@ -37,6 +37,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { UniversalDetailModal } from "@/components/UniversalDetailModal";
+import { useAuthStore } from "@/store/authStore";
 
 const POSTING_TYPES = [
   { value: "all", label: "ทั้งหมด" },
@@ -61,9 +62,10 @@ interface JobCardProps {
   showContact?: boolean;
   onShowContact?: () => void;
   onViewDetails: (job: GeneralJob) => void;
+  isAuthenticated: boolean;
 }
 
-function GeneralJobCard({ job, showContact, onShowContact, onViewDetails }: JobCardProps) {
+function GeneralJobCard({ job, showContact, onShowContact, onViewDetails, isAuthenticated }: JobCardProps) {
   const formatWage = () => {
     if (!job.wage_amount || job.wage_type === "negotiable") {
       return job.wage_type === "negotiable" ? "ตกลงกันได้" : "ไม่ระบุ";
@@ -106,7 +108,7 @@ function GeneralJobCard({ job, showContact, onShowContact, onViewDetails }: JobC
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <UserIcon className="h-4 w-4" />
-          <span>{job.employer_name || job.seeker_name || "ไม่ระบุชื่อ"}</span>
+          <span>{isAuthenticated ? (job.employer_name || job.seeker_name || "ไม่ระบุชื่อ") : "เข้าสู่ระบบเพื่อดูชื่อ"}</span>
         </div>
 
         {job.location && (
@@ -168,9 +170,10 @@ interface RepairJobCardProps {
   job: Job;
   onAssign?: () => void;
   onViewDetails: (job: Job) => void;
+  isAuthenticated: boolean;
 }
 
-function RepairJobCard({ job, onAssign, onViewDetails }: RepairJobCardProps) {
+function RepairJobCard({ job, onAssign, onViewDetails, isAuthenticated }: RepairJobCardProps) {
   const getJobTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       electric: "ไฟฟ้า",
@@ -198,7 +201,7 @@ function RepairJobCard({ job, onAssign, onViewDetails }: RepairJobCardProps) {
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <UserIcon className="h-4 w-4" />
-          <span>{job.requester_name || "ไม่ระบุชื่อ"}</span>
+          <span>{isAuthenticated ? (job.requester_name || "ไม่ระบุชื่อ") : "เข้าสู่ระบบเพื่อดูชื่อ"}</span>
         </div>
 
         {job.location && (
@@ -252,6 +255,7 @@ function RepairJobCard({ job, onAssign, onViewDetails }: RepairJobCardProps) {
 function JobsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated } = useAuthStore();
   const [generalJobs, setGeneralJobs] = useState<GeneralJob[]>([]);
   const [repairJobs, setRepairJobs] = useState<Job[]>([]);
   const [categories, setCategories] = useState<JobCategory[]>([]);
@@ -517,7 +521,16 @@ function JobsContent() {
             <TabsTrigger value="repair">งานซ่อม</TabsTrigger>
           </TabsList>
 
-          <Button onClick={() => router.push('/create-job')} className="bg-blue-600 hover:bg-blue-700">
+          <Button
+            onClick={() => {
+              if (!isAuthenticated) {
+                router.push('/login');
+              } else {
+                router.push('/create-job');
+              }
+            }}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             โพสต์หางาน
           </Button>
         </div>
@@ -535,6 +548,7 @@ function JobsContent() {
                       showContact={true}
                       onShowContact={() => handleShowContact(job.id)}
                       onViewDetails={handleViewDetails}
+                      isAuthenticated={isAuthenticated}
                     />
                   ))}
                 </div>
@@ -550,6 +564,7 @@ function JobsContent() {
                       key={job.id}
                       job={job}
                       onViewDetails={handleViewDetails}
+                      isAuthenticated={isAuthenticated}
                     />
                   ))}
                 </div>
@@ -568,6 +583,7 @@ function JobsContent() {
                   showContact={true}
                   onShowContact={() => handleShowContact(job.id)}
                   onViewDetails={handleViewDetails}
+                  isAuthenticated={isAuthenticated}
                 />
               ))}
             </div>
@@ -586,6 +602,7 @@ function JobsContent() {
                   key={job.id}
                   job={job}
                   onViewDetails={handleViewDetails}
+                  isAuthenticated={isAuthenticated}
                 />
               ))}
             </div>

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useWasteStore } from "@/store/wasteStore";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { UniversalDetailModal } from "@/components/UniversalDetailModal";
 
 const WasteDashboard = () => {
     const { user } = useAuthStore();
+    const router = useRouter();
     const { wasteReports, createReport, updateStatus, loadReports, myReports, activeReports } = useWasteStore();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [newReport, setNewReport] = useState({
@@ -136,13 +138,21 @@ const WasteDashboard = () => {
                         <p className="text-muted-foreground">รายงานและติดตามการกำจัดขยะในพื้นที่</p>
                     </div>
 
+                    <Button
+                        variant="destructive"
+                        onClick={() => {
+                            if (!user) {
+                                router.push('/login');
+                            } else {
+                                setIsCreateDialogOpen(true);
+                            }
+                        }}
+                    >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        แจ้งจุดขยะ
+                    </Button>
+
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="destructive">
-                                <PlusIcon className="h-4 w-4 mr-2" />
-                                แจ้งจุดขยะ
-                            </Button>
-                        </DialogTrigger>
                         <DialogContent className="max-w-md">
                             <DialogHeader>
                                 <DialogTitle>แจ้งจุดขยะ</DialogTitle>
