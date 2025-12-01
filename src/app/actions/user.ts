@@ -81,7 +81,17 @@ export async function syncUser(user: UserData) {
 export async function getAllUsers() {
     try {
         const result = await turso.execute("SELECT * FROM users ORDER BY created_at DESC");
-        return { success: true, users: result.rows as unknown as UserData[] };
+        const users = result.rows.map((row: any) => ({
+            ...row,
+            // Ensure dates are strings
+            created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
+            updated_at: row.updated_at ? new Date(row.updated_at).toISOString() : null,
+            // Map avatar_url to avatar if needed, or just keep as is if the column is avatar
+            // Assuming column might be avatar_url based on error message, but keeping generic spread is safest for now
+            // unless we want to explicitly map.
+            // Let's just ensure it's a plain object by spreading.
+        }));
+        return { success: true, users: users as unknown as UserData[] };
     } catch (error) {
         console.error("Error fetching users:", error);
         return { success: false, error: "Failed to fetch users", users: [] };
@@ -96,7 +106,13 @@ export async function getUser(userId: string) {
         });
 
         if (result.rows.length > 0) {
-            return { success: true, user: result.rows[0] as unknown as UserData };
+            const row = result.rows[0] as any;
+            const user = {
+                ...row,
+                created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
+                updated_at: row.updated_at ? new Date(row.updated_at).toISOString() : null,
+            };
+            return { success: true, user: user as unknown as UserData };
         }
         return { success: false, error: "User not found" };
     } catch (error) {
@@ -155,8 +171,16 @@ export async function getUserHistory(userId: string) {
         });
 
         const history = [
-            ...jobsResult.rows.map(row => ({ ...row, title: `แจ้งซ่อม: ${row.title}` })),
-            ...wasteResult.rows.map(row => ({ ...row, title: `รายงานขยะ: ${row.title}` }))
+            ...jobsResult.rows.map((row: any) => ({
+                ...row,
+                title: `แจ้งซ่อม: ${row.title}`,
+                created_at: row.created_at ? new Date(row.created_at).toISOString() : null
+            })),
+            ...wasteResult.rows.map((row: any) => ({
+                ...row,
+                title: `รายงานขยะ: ${row.title}`,
+                created_at: row.created_at ? new Date(row.created_at).toISOString() : null
+            }))
         ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
         return { success: true, history };
