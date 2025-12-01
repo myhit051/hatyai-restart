@@ -157,7 +157,7 @@ export async function getUserHistory(userId: string) {
         const history = [
             ...jobsResult.rows.map(row => ({ ...row, title: `แจ้งซ่อม: ${row.title}` })),
             ...wasteResult.rows.map(row => ({ ...row, title: `รายงานขยะ: ${row.title}` }))
-        ].sort((a, b) => new Date(b.created_at as string).getTime() - new Date(a.created_at as string).getTime());
+        ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
         return { success: true, history };
     } catch (error) {
