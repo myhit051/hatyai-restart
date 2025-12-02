@@ -31,7 +31,8 @@ import {
     ArrowRight,
     Heart,
     LockIcon,
-    ImageIcon
+    ImageIcon,
+    X
 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +40,7 @@ import { Label } from "@/components/ui/label";
 import dynamic from 'next/dynamic';
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils"; // Assuming cn utility is available or needs to be added
 
 const Map = dynamic(() => import("@/components/Map"), {
     ssr: false,
@@ -56,26 +58,28 @@ interface UniversalDetailModalProps {
 }
 
 const URGENCY_COLORS = {
-    low: "bg-green-100 text-green-800",
+    low: "bg-gray-100 text-gray-800",
     medium: "bg-yellow-100 text-yellow-800",
     high: "bg-orange-100 text-orange-800",
     urgent: "bg-red-100 text-red-800",
-    critical: "bg-red-100 text-red-800",
+    critical: "bg-red-600 text-white",
 } as const;
 
 const POSTING_TYPE_COLORS = {
     hiring: "bg-blue-100 text-blue-800",
-    seeking: "bg-purple-100 text-purple-800",
+    seeking_job: "bg-purple-100 text-purple-800",
 } as const;
 
-export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalDetailModalProps) {
-    const { isAuthenticated } = useAuthStore();
+export const UniversalDetailModal = ({ isOpen, onClose, type, data }: UniversalDetailModalProps) => {
+    const { user, isAuthenticated } = useAuthStore();
     const router = useRouter();
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     if (!data) return null;
 
     // Helper functions
     const formatDate = (dateString: string) => {
+        if (!dateString) return "";
         try {
             return new Date(dateString).toLocaleDateString('th-TH', {
                 day: 'numeric',
@@ -143,7 +147,7 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                                     src={img}
                                     alt={`Image ${index + 1}`}
                                     className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-                                    onClick={() => window.open(img, '_blank')}
+                                    onClick={() => setPreviewImage(img)}
                                 />
                             </div>
                         ))}
@@ -674,16 +678,43 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-                <DialogTitle className="sr-only">รายละเอียด</DialogTitle>
-                <div className="flex-1 overflow-y-auto p-6">
-                    {renderContent()}
-                </div>
-                <div className="p-4 border-t bg-gray-50 flex justify-end">
-                    <Button variant="outline" onClick={onClose}>ปิด</Button>
-                </div>
-            </DialogContent>
-        </Dialog>
+        <>
+            <Dialog open={isOpen} onOpenChange={onClose}>
+                <DialogContent className={cn(
+                    "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+                    "max-h-[90vh] overflow-hidden flex flex-col"
+                )}>
+                    <DialogHeader>
+                        <DialogTitle>รายละเอียด</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto pr-2">
+                        {renderContent()}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+                <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center outline-none">
+                    <div className="relative w-full h-full flex items-center justify-center" onClick={() => setPreviewImage(null)}>
+                        <button
+                            className="absolute top-2 right-2 z-50 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewImage(null);
+                            }}
+                        >
+                            <X className="h-6 w-6" />
+                        </button>
+                        <img
+                            src={previewImage || ''}
+                            alt="Full size"
+                            className="max-w-full max-h-full object-contain"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </>
     );
-}
+};
+
