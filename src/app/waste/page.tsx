@@ -302,7 +302,7 @@ const WasteDashboard = () => {
                             activeReports.map((report) => (
                                 <Card key={report.id} className="hover:shadow-md transition-shadow">
                                     <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between">
+                                        <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Badge variant="destructive">แจ้งจุดขยะ</Badge>
@@ -314,6 +314,15 @@ const WasteDashboard = () => {
                                                     {report.description}
                                                 </CardTitle>
                                             </div>
+                                            {report.imageUrl && (
+                                                <div className="relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden border">
+                                                    <img
+                                                        src={report.imageUrl}
+                                                        alt="Waste"
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
@@ -380,7 +389,7 @@ const WasteDashboard = () => {
                             myReports.map((report) => (
                                 <Card key={report.id} className="hover:shadow-md transition-shadow">
                                     <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between">
+                                        <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Badge variant="destructive">แจ้งจุดขยะ</Badge>
@@ -392,6 +401,15 @@ const WasteDashboard = () => {
                                                     {report.description}
                                                 </CardTitle>
                                             </div>
+                                            {report.imageUrl && (
+                                                <div className="relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden border">
+                                                    <img
+                                                        src={report.imageUrl}
+                                                        alt="Waste"
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
