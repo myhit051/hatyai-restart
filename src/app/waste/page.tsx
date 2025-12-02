@@ -52,6 +52,11 @@ const WasteDashboard = () => {
             return;
         }
 
+        if (newReport.images.length === 0) {
+            alert("กรุณาอัปโหลดรูปภาพอย่างน้อย 1 รูป");
+            return;
+        }
+
         try {
             const result = await createReport({
                 reporter_id: user.id,
@@ -221,7 +226,7 @@ const WasteDashboard = () => {
                                 </div>
 
                                 <div>
-                                    <Label>รูปภาพประกอบ</Label>
+                                    <Label>รูปภาพประกอบ <span className="text-red-500">*</span></Label>
                                     <div className="mt-2">
                                         <ImageUpload
                                             value={newReport.images}

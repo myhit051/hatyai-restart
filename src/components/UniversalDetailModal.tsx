@@ -7,7 +7,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -635,9 +635,9 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
                 <DialogTitle className="sr-only">รายละเอียด</DialogTitle>
-                <ScrollArea className="flex-1 p-6">
+                <div className="flex-1 overflow-y-auto p-6">
                     {renderContent()}
-                </ScrollArea>
+                </div>
                 <div className="p-4 border-t bg-gray-50 flex justify-end">
                     <Button variant="outline" onClick={onClose}>ปิด</Button>
                 </div>
