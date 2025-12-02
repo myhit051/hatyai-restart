@@ -22,6 +22,7 @@ import {
     CheckCircleIcon
 } from "@heroicons/react/24/outline";
 import { UniversalDetailModal } from "@/components/UniversalDetailModal";
+import ImageUpload from "@/components/ui/image-upload";
 
 const WasteDashboard = () => {
     const { user } = useAuthStore();
@@ -34,6 +35,7 @@ const WasteDashboard = () => {
         description: "",
         severity: "medium" as "low" | "medium" | "high",
         coordinates: null as { lat: number; lng: number } | null,
+        images: [] as string[],
     });
 
     useEffect(() => {
@@ -59,6 +61,7 @@ const WasteDashboard = () => {
                 location: newReport.location,
                 severity: newReport.severity,
                 coordinates: newReport.coordinates || undefined,
+                image_url: newReport.images.length > 0 ? newReport.images[0] : undefined,
             });
 
             if (result && result.success) {
@@ -68,6 +71,7 @@ const WasteDashboard = () => {
                     description: "",
                     severity: "medium",
                     coordinates: null,
+                    images: [],
                 });
                 setIsCreateDialogOpen(false);
             } else {
@@ -214,6 +218,17 @@ const WasteDashboard = () => {
                                             <SelectItem value="high">สูง (อันตราย/กีดขวางจราจร)</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+
+                                <div>
+                                    <Label>รูปภาพประกอบ</Label>
+                                    <div className="mt-2">
+                                        <ImageUpload
+                                            value={newReport.images}
+                                            onChange={(urls) => setNewReport(prev => ({ ...prev, images: urls }))}
+                                            onRemove={(url) => setNewReport(prev => ({ ...prev, images: prev.images.filter(current => current !== url) }))}
+                                        />
+                                    </div>
                                 </div>
 
                                 <Button onClick={handleCreateReport} className="w-full" variant="destructive">
