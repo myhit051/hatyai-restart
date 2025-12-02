@@ -70,6 +70,11 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
         if (mapInstanceRef.current) return; // Prevent double initialization
 
         // Dynamically import markercluster to ensure Leaflet is ready
+        // Ensure L is available globally for markercluster
+        if (typeof window !== 'undefined' && !(window as any).L) {
+            (window as any).L = L;
+        }
+
         import("leaflet.markercluster").then(() => {
             if (!mapContainerRef.current) return;
             if (mapInstanceRef.current) return; // Prevent double initialization inside async callback
@@ -91,6 +96,12 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
             map.addLayer(markerClusterGroup);
             markerClusterGroupRef.current = markerClusterGroup;
             mapInstanceRef.current = map;
+
+            // Force map resize to ensure tiles load correctly
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+
             setIsMapReady(true);
 
             // Add Fit Bounds Button Control
