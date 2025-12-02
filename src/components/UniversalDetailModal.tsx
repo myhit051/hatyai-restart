@@ -121,7 +121,9 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
     };
 
     const renderImages = () => {
-        const images = data.images || (data.image_url ? [data.image_url] : []) || (data.imageUrl ? [data.imageUrl] : []);
+        const images = data.images && data.images.length > 0
+            ? data.images
+            : (data.image_url ? [data.image_url] : (data.imageUrl ? [data.imageUrl] : []));
 
         if (!images || images.length === 0) return null;
 
