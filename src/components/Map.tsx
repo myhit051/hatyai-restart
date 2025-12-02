@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
@@ -62,6 +62,8 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 
+    const [isMapReady, setIsMapReady] = useState(false);
+
     // Initialize Map
     useEffect(() => {
         if (!mapContainerRef.current) return;
@@ -89,6 +91,7 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
             map.addLayer(markerClusterGroup);
             markerClusterGroupRef.current = markerClusterGroup;
             mapInstanceRef.current = map;
+            setIsMapReady(true);
 
             // Add Fit Bounds Button Control
             const FitBoundsControl = L.Control.extend({
@@ -134,6 +137,7 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
+                setIsMapReady(false);
             }
         };
     }, [center, zoom]);
@@ -141,7 +145,7 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
     // Update Markers
     useEffect(() => {
         // Wait for map and cluster group to be ready
-        if (!mapInstanceRef.current || !markerClusterGroupRef.current) return;
+        if (!isMapReady || !mapInstanceRef.current || !markerClusterGroupRef.current) return;
 
         const clusterGroup = markerClusterGroupRef.current;
         clusterGroup.clearLayers();
@@ -226,7 +230,7 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
 
             return () => clearTimeout(timer);
         }
-    }, [items, center]);
+    }, [items, center, isMapReady]);
 
     return <div ref={mapContainerRef} style={{ height: "100%", width: "100%", zIndex: 0 }} />;
 };
