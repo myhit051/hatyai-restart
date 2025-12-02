@@ -8,6 +8,7 @@ import { useJobStore } from "@/store/jobStore";
 import { useWasteStore } from "@/store/wasteStore";
 import { useResourceStore } from "@/store/resourceStore";
 import { UniversalDetailModal } from "@/components/UniversalDetailModal";
+import HowItWorks from "@/components/HowItWorks";
 
 const IndexPage = () => {
     const { user } = useAuthStore();
@@ -93,6 +94,9 @@ const IndexPage = () => {
 
                 {/* Recent Activity */}
                 <RecentActivity activities={recentActivities} onItemClick={handleActivityClick} />
+
+                {/* How It Works Section */}
+                <HowItWorks />
             </main>
 
             <UniversalDetailModal

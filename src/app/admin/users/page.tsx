@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import {
     Search, ArrowLeft, Shield, User, Wrench, Loader2,
-    Trash2, History, AlertTriangle
+    Trash2, History, AlertTriangle, UserPlus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -164,6 +164,20 @@ export default function AdminUsersPage() {
         );
     }
 
+    const stats = {
+        total: users.length,
+        admins: users.filter(u => u.role === 'admin').length,
+        technicians: users.filter(u => u.role === 'technician').length,
+        newToday: users.filter(u => {
+            if (!u.created_at) return false;
+            const created = new Date(u.created_at);
+            const today = new Date();
+            return created.getDate() === today.getDate() &&
+                created.getMonth() === today.getMonth() &&
+                created.getFullYear() === today.getFullYear();
+        }).length
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <header className="bg-white border-b sticky top-0 z-10 px-4 py-4 shadow-sm">
@@ -179,6 +193,48 @@ export default function AdminUsersPage() {
             </header>
 
             <main className="max-w-4xl mx-auto p-4">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <Card className="p-4 flex items-center gap-4 border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-full">
+                            <User className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 font-medium">สมาชิกทั้งหมด</p>
+                            <h3 className="text-2xl font-bold text-gray-800">{stats.total}</h3>
+                        </div>
+                    </Card>
+
+                    <Card className="p-4 flex items-center gap-4 border-l-4 border-l-green-500 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="p-3 bg-green-50 text-green-600 rounded-full">
+                            <UserPlus className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 font-medium">ใหม่วันนี้</p>
+                            <h3 className="text-2xl font-bold text-gray-800">{stats.newToday}</h3>
+                        </div>
+                    </Card>
+
+                    <Card className="p-4 flex items-center gap-4 border-l-4 border-l-orange-500 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="p-3 bg-orange-50 text-orange-600 rounded-full">
+                            <Wrench className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 font-medium">ช่าง</p>
+                            <h3 className="text-2xl font-bold text-gray-800">{stats.technicians}</h3>
+                        </div>
+                    </Card>
+
+                    <Card className="p-4 flex items-center gap-4 border-l-4 border-l-red-500 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="p-3 bg-red-50 text-red-600 rounded-full">
+                            <Shield className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 font-medium">ผู้ดูแลระบบ</p>
+                            <h3 className="text-2xl font-bold text-gray-800">{stats.admins}</h3>
+                        </div>
+                    </Card>
+                </div>
                 <div className="relative mb-6">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <Input

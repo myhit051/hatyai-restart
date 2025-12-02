@@ -634,6 +634,7 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
+                <DialogTitle className="sr-only">รายละเอียด</DialogTitle>
                 <ScrollArea className="flex-1 p-6">
                     {renderContent()}
                 </ScrollArea>
