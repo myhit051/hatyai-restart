@@ -30,7 +30,8 @@ import {
     Box,
     ArrowRight,
     Heart,
-    LockIcon
+    LockIcon,
+    ImageIcon
 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -119,6 +120,37 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
         );
     };
 
+    const renderImages = () => {
+        const images = data.images || (data.image_url ? [data.image_url] : []) || (data.imageUrl ? [data.imageUrl] : []);
+
+        if (!images || images.length === 0) return null;
+
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <ImageIcon className="h-5 w-5" />
+                        รูปภาพ
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {images.map((img: string, index: number) => (
+                            <div key={index} className="relative aspect-video rounded-lg overflow-hidden border bg-gray-100 group">
+                                <img
+                                    src={img}
+                                    alt={`Image ${index + 1}`}
+                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                    onClick={() => window.open(img, '_blank')}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    };
+
     // Render Content based on Type
     const renderContent = () => {
         switch (type) {
@@ -156,6 +188,8 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                                 </CardDescription>
                             </CardHeader>
                         </Card>
+
+                        {renderImages()}
 
                         {(data.location || data.coordinates) && (
                             <Card>
@@ -263,6 +297,8 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                             )}
                         </CardHeader>
                     </Card>
+
+                    {renderImages()}
 
                     <Card>
                         <CardHeader>
@@ -458,6 +494,8 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                         </CardHeader>
                     </Card>
 
+                    {renderImages()}
+
                     {(data.location || data.coordinates) && (
                         <Card>
                             <CardHeader>
@@ -543,6 +581,8 @@ export function UniversalDetailModal({ isOpen, onClose, type, data }: UniversalD
                             </CardDescription>
                         </CardHeader>
                     </Card>
+
+                    {renderImages()}
 
                     <Card>
                         <CardHeader>
