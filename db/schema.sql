@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS resources (
   donor_id TEXT NOT NULL,
   status TEXT DEFAULT 'available', -- 'available', 'assigned', 'distributed', 'expired'
   location TEXT,
+  coordinates TEXT, -- JSON {lat, lng}
   priority TEXT DEFAULT 'medium',
   quality_condition TEXT DEFAULT 'good',
   expiration_date DATETIME,
@@ -43,6 +44,10 @@ CREATE TABLE IF NOT EXISTS needs (
   urgency TEXT DEFAULT 'medium', -- 'low', 'medium', 'high', 'critical'
   description TEXT,
   location TEXT,
+  coordinates TEXT, -- JSON {lat, lng}
+  special_requirements TEXT,
+  beneficiary_count INTEGER DEFAULT 1,
+  vulnerability_level TEXT DEFAULT 'medium', -- 'low', 'medium', 'high'
   status TEXT DEFAULT 'pending', -- 'pending', 'matched', 'fulfilled'
   matched_resource_id TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

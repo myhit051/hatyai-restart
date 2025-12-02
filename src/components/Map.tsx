@@ -151,7 +151,7 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
                 setIsMapReady(false);
             }
         };
-    }, [center, zoom]);
+    }, []); // ✅ แก้ไข: ให้ initialize แค่ครั้งเดียวตอน mount
 
     // Update Markers
     useEffect(() => {
@@ -241,7 +241,7 @@ const Map = ({ items, center = [7.00866, 100.47469], zoom = 13 }: MapProps) => {
 
             return () => clearTimeout(timer);
         }
-    }, [items, center, isMapReady]);
+    }, [items, center]);
 
     return <div ref={mapContainerRef} style={{ height: "100%", width: "100%", zIndex: 0 }} />;
 };
