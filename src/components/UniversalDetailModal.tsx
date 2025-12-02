@@ -694,7 +694,7 @@ export const UniversalDetailModal = ({ isOpen, onClose, type, data }: UniversalD
             </Dialog>
 
             <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-                <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center outline-none">
+                <DialogContent className="!max-w-[95vw] !w-[95vw] !max-h-[95vh] !h-[95vh] p-0 bg-transparent border-none shadow-none flex items-center justify-center outline-none">
                     <div className="relative w-full h-full flex items-center justify-center" onClick={() => setPreviewImage(null)}>
                         <button
                             className="absolute top-2 right-2 z-50 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
