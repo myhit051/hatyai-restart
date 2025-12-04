@@ -162,12 +162,12 @@ const WasteDashboard = () => {
                     </Button>
 
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogContent className="max-w-md">
-                            <DialogHeader>
+                        <DialogContent className="max-w-md flex flex-col max-h-[85vh] max-h-[85dvh] p-0">
+                            <DialogHeader className="px-6 pt-6 pb-4 border-b sticky top-0 bg-background z-10">
                                 <DialogTitle>แจ้งจุดขยะ</DialogTitle>
                             </DialogHeader>
 
-                            <div className="space-y-4">
+                            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
                                 <div>
                                     <Label htmlFor="location">สถานที่</Label>
                                     <LocationPicker
@@ -235,7 +235,9 @@ const WasteDashboard = () => {
                                         />
                                     </div>
                                 </div>
+                            </div>
 
+                            <div className="px-6 py-4 border-t sticky bottom-0 bg-background">
                                 <Button onClick={handleCreateReport} className="w-full" variant="destructive">
                                     แจ้งจุดขยะ
                                 </Button>
